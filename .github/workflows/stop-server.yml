@@ -1,0 +1,29 @@
+name: Stop Server
+
+on:
+  workflow_dispatch:
+
+jobs:
+  stop-server:
+    runs-on: ubuntu-latest 
+    env:
+      EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+      EC2_URL: ${{ secrets.EC2_URL }}
+      EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+
+    steps:
+      # Step 1: Setup SSH for EC2
+      - name: Setup SSH for EC2
+        uses: omarhosny206/setup-ssh-for-ec2@v1.0.0
+        with:
+          EC2_SSH_PRIVATE_KEY: $EC2_SSH_PRIVATE_KEY
+          EC2_URL: $EC2_URL
+
+      # Step 2: Stop the running container
+      - name: Stop the running container
+        run: |
+          ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_URL << 'EOF'
+            echo "Stopping existing container..."
+            docker stop backend || true 
+            docker rm backend || true
+          EOF

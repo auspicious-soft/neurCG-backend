@@ -1,0 +1,132 @@
+name: CI/CD Pipeline
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest 
+    env:
+      EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+      EC2_URL: ${{ secrets.EC2_URL }}
+      EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Build the project
+      - name: Build the project
+        run: npm run build
+
+      # Step 5: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Step 6: Build and push Docker image to Docker Hub
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/backend:latest
+
+      # Step 7: Setup SSH for EC2
+      - name: Setup SSH for EC2
+        uses: omarhosny206/setup-ssh-for-ec2@v1.0.0
+        with:
+          EC2_SSH_PRIVATE_KEY: $EC2_SSH_PRIVATE_KEY
+          EC2_URL: $EC2_URL
+
+      # Step 8: Deploy to EC2
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_URL << 'EOF'
+            set -e
+
+            # Clean up EC2 instance
+            echo "Cleaning up EC2 instance..."
+            docker image prune -f || { echo "Docker image prune failed"; exit 1; }
+
+            # Check if Docker is installed
+            if ! command -v docker &> /dev/null
+            then 
+              sudo apt-get update
+              sudo apt-get install -y docker.io
+            fi
+            
+            echo "Pulling Docker image..."
+            docker pull ${{ secrets.DOCKER_USERNAME }}/backend:latest || { echo "Docker pull failed"; exit 1; }
+    
+            echo "Stopping existing container..."
+            docker stop backend || true 
+            docker rm backend || true
+    
+            echo "Running new container..."
+            docker run -d -p 8000:8000 --name backend \
+              -e MONGO_URL=${{ secrets.MONGO_URL }} \
+              -e PORT=${{ secrets.PORT }} \
+              -e NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }} \
+              -e RESEND_API_KEY=${{ secrets.RESEND_API_KEY }} \
+              -e COMPANY_RESEND_GMAIL_ACCOUNT=${{ secrets.COMPANY_RESEND_GMAIL_ACCOUNT }} \
+              ${{ secrets.DOCKER_USERNAME }}/backend:latest || { echo "Docker run failed"; exit 1; }
+    
+            # Install Nginx if not present
+            if ! command -v nginx &> /dev/null
+            then
+              sudo apt-get update
+              sudo apt-get install -y nginx
+            fi
+    
+            # Create temporary Nginx configuration
+            sudo tee /etc/nginx/sites-available/default.tmp > /dev/null << 'EOL'
+            server {
+                listen 80;
+                server_name ${{ secrets.EC2_URL }};
+    
+                location / {
+                    proxy_pass http://localhost:8000;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host $host;
+                    proxy_cache_bypass $http_upgrade;
+                }
+            }
+            EOL
+    
+            # Move temporary config to default location if successful
+            if [ $? -eq 0 ]; then
+              sudo mv /etc/nginx/sites-available/default.tmp /etc/nginx/sites-available/default
+              sudo systemctl restart nginx
+            else
+              echo "Failed to create Nginx config"
+            fi
+    
+            # Prune unused Docker resources to free up space
+            echo "Cleaning up unused Docker resources..."
+            docker system prune -af --volumes || { echo "Docker system prune failed"; exit 1; }
+            # Clean up temporary files and logs
+            echo "Cleaning up temporary files and logs..."
+            sudo rm -rf /tmp/*
+            sudo truncate -s 0 /var/log/*.log
+            echo "Cleaning up log files..."
+            sudo find /var/log/ -type f -name "*.log" -exec truncate -s 0 {} \;
+            echo "Checking disk usage after cleanup..."
+            df -h
+
+          EOF

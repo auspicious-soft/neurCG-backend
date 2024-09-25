@@ -1,0 +1,1792 @@
+openapi: 3.0.0
+info:
+  title: NeurCG API's
+  description: API documentation for the NeurCG project
+  version: 1.0.0
+servers:
+  - url: NODE_BACKEND_URL/api
+
+paths:
+  /landing/contact-us:
+    post:
+      tags:
+        - Contact Us
+      summary: Contact Us
+      description: Send a message to the admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: John Doe
+                email:
+                  type: string
+                  example: johndoe@gmail.com
+                phoneNumber:
+                  type: string
+                  example: 1234567890
+                message:
+                  type: string
+                  example: I have a question about the product.
+      responses:
+        "201":
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: We have recieved your message successfully.
+                  status:
+                    type: boolean
+                    example: true
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /landing/latest-updates:
+    post:
+      tags:
+        - Contact Us
+      summary: Get Latest Updates
+      description: Get the latest updates from the admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: johndoe@gmail.com
+      responses:
+        "201":
+          description: You are subscribed to our latest updates
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are subscribed to our latest updates.
+                  status:
+                    type: boolean
+                    example: true
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /admin/login:
+    post:
+      tags:
+        - Authentication
+      summary: Admin Login
+      description: Authenticate an admin and return a token.
+      operationId: loginAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: admin@example.com
+                password:
+                  type: string
+                  example: admin
+              required:
+                - email
+                - password
+      responses:
+        "201":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Login successful.
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+                      firstName:
+                        type: string
+                        example: admin
+                      lastName:
+                        type: string
+                        example: user
+                      otherDetails:
+                        type: string
+                        example: other details
+        "401":
+          description: Unauthorized / invalid credentials.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid email or password.
+                  status:
+                    type: boolean
+                    example: false
+        "404":
+          description: User Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Admin not found please signup.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /user/login:
+    post:
+      tags:
+        - Authentication
+      summary: User Login
+      description: Authenticate a user and return a token.
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: johndoe@example.com
+                password:
+                  type: string
+                  example: strongpassword123
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Login successful.
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+                      firstName:
+                        type: string
+                        example: john
+                      lastName:
+                        type: string
+                        example: doe
+                      otherDetails:
+                        type: string
+                        example: other details
+        "401":
+          description: Unauthorized / invalid credentials.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid email or password.
+                  status:
+                    type: boolean
+                    example: false
+        "404":
+          description: User Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User not found please signup.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /user/signup:
+    post:
+      tags:
+        - Authentication
+      summary: User Signup
+      description: Create a new user account.
+      operationId: signupUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  example: john
+                lastName:
+                  type: string
+                  example: doe
+                password:
+                  type: string
+                  example: strongpassword123
+                email:
+                  type: string
+                  example: johndoe@example.com
+              required:
+                - firstName
+                - lastName
+                - password
+                - email
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User created successfully.
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b3b
+                      firstName:
+                        type: string
+                        example: john
+                      lastName:
+                        type: string
+                        example: doe
+                      email:
+                        type: string
+                        example: johndoe@gmail.com
+        "409":
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User already exists please go to login page.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /forgot-password:
+    post:
+      tags:
+        - Authentication
+      summary: Forgot Password
+      description: Send a password reset otp to user's email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: johndoe@gmail.com
+      responses:
+        "201":
+          description: Password reset otp sent to your email
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password reset link otp sent to your email.
+                  status:
+                    type: boolean
+                    example: true
+        "404":
+          description: User Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User not found please signup.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /verify-otp:
+    post:
+      tags:
+        - Authentication
+      summary: After the forgot password otp is verified
+      description: Set the new password for the user using the token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: newpassword123
+                otp:
+                  type: string
+                  example: 2433
+      responses:
+        "200":
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password updated successfully.
+                  status:
+                    type: boolean
+                    example: true
+        "401":
+          description: Unauthorized / invalid otp.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid otp.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /new-password-otp-verified:
+    post:
+      tags:
+        - Authentication
+      summary: After the otp is verified
+      description: Set the new password for the user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                otp:
+                  type: string
+                  example: 2433
+                password:
+                  type: string
+                  example: newpassword123
+      responses:
+        "201":
+          description: OTP verified successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: The password has been updated successfully.
+                  status:
+                    type: boolean
+                    example: true
+        "401":
+          description: Unauthorized / invalid otp.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid token.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+
+  /admin/users:
+    get:
+      tags:
+        - Admin
+      summary: Get the user data for the admin.
+      description: Get the user data of all the users.
+      parameters:
+        - name: page
+          in: query
+          description: The current page number to retrieve
+          required: false
+          schema:
+            type: number
+            example: 1
+        - name: limit
+          in: query
+          description: The current number of items per page
+          required: false
+          schema:
+            type: number
+            example: 10
+        - name: description
+          in: query
+          description: The search query to filter the data, we will be using [customer name] or [id] as of now as per current design
+          required: false
+          schema:
+            type: string
+            example: john
+      responses:
+        "200":
+          description: Users data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Users retrieved successfully.
+                  status:
+                    type: boolean
+                    example: true
+                  page:
+                    type: number
+                    example: 1
+                  limit:
+                    type: number
+                    example: 10
+                  total:
+                    type: number
+                    example: 568
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 5f7b3b3b7f3b3b3b3b3b3b3b
+                        firstName:
+                          type: string
+                          example: john
+                        lastName:
+                          type: string
+                          example: doe
+                        email:
+                          type: string
+                          example: johmdoe@gmail.com
+                        subscriptionType:
+                          type: string
+                          example: pro/intro...
+                        date:
+                          type: string
+                          example: 2020-10-05
+        "204":
+          description: No Content"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are not authorized to access this resource.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /admin/income:
+    get:
+      tags:
+        - Admin
+      summary: Get the income data for the users.
+      description: Get the income data of all the users.
+      parameters:
+        - name: page
+          in: query
+          description: The current page number to retrieve
+          required: false
+          schema:
+            type: number
+            example: 1
+        - name: limit
+          in: query
+          description: The current number of items per page
+          required: false
+          schema:
+            type: number
+            example: 10
+        - name: description
+          in: query
+          description: The search query to filter the data, we will be using [customer name] or [id] as of now as per current design
+          required: false
+          schema:
+            type: string
+            example: john
+      responses:
+        "200":
+          description: Income data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Income retrieved successfully.
+                  status:
+                    type: boolean
+                    example: true
+                  page:
+                    type: number
+                    example: 1
+                  limit:
+                    type: number
+                    example: 10
+                  total:
+                    type: number
+                    example: 568
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 5f7b3b3b7f3b3b3b3b3b3b3b this will be the income/transaction id not user id
+                        firstName:
+                          type: string
+                          example: john
+                        lastName:
+                          type: string
+                          example: doe
+                        email:
+                          type: string
+                          example:
+                        subscriptionType:
+                          type: string
+                          example: pro/intro...
+                        amount:
+                          type: number
+                          example: 10.40
+                        date:
+                          type: string
+                          example: 2020-10-05
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are not authorized to access this resource.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /admin/users/{id}:
+    get:
+      tags:
+        - Admin
+      summary: Get the user data for the admin.
+      description: Get the user data of a specific user.
+      parameters:
+        - name: id
+          in: path
+          description: The id of the user to retrieve
+          required: true
+          schema:
+            type: string
+            example: 5f7b3b3b7f3b3b3b3b3b3b3b
+      responses:
+        "200":
+          description: User data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User retrieved successfully.
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b3b
+                      firstName:
+                        type: string
+                        example: john
+                      lastName:
+                        type: string
+                        example: doe
+                      email:
+                        type: string
+                        example: johndoe@gmail.com
+                      subscriptionType:
+                        type: string
+                        example: pro/intro...
+                      date:
+                        type: string
+                        example: 2020-10-02
+                      profilePic:
+                        type: string
+                        example: https://example.com/image.jpg
+                      avatarsUsed:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: 5f7b3b3b7f3b3b3b3b3b3b3b
+                            name:
+                              type: string
+                              example: avatar1
+                            date:
+                              type: string
+                              example: 2020-10-02
+                            avatarPic:
+                              type: string
+                              example: https://example.com/image.jpg
+                      projects:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: 5f7b3b3b7f3b3b3b3b3b3b3b
+                            name:
+                              type: string
+                              example: project1
+                            date:
+                              type: string
+                              example: 2020-10-02
+                            projectVideoLink:
+                              type: string
+                              example: https://example.com/video.mp4
+                            projectAvatarPic:
+                              type: string
+                              example: https://example.com/image.jpg
+                      creditsLeft:
+                        type: number
+                        example: 10
+                      referredBy:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b3b
+                      referredCount:
+                        type: number
+                        example: 5
+                      referralBonusPoints:
+                        type: number
+                        example: 10
+                      referralEarnings:
+                        type: number
+                        example: 10
+
+        "404":
+          description: User Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User not found.
+                  status:
+                    type: boolean
+                    example: false
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are not authorized to access this resource.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /admin/dashboard:
+    get:
+      tags:
+        - Admin
+      summary: Get the dashboard data for the admin.
+      description: Get the dashboard data of the admin.
+      responses:
+        "200":
+          description: Dashboard data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Dashboard data retrieved successfully.
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      incomeThisMonth:
+                        type: number
+                        example: 568
+                      incomeData:
+                        type: object
+                        properties:
+                          months:
+                            type: array
+                            items:
+                              type: string
+                            example:
+                              [
+                                "Jan",
+                                "Feb",
+                                "Mar",
+                                "Apr",
+                                "May",
+                                "Jun",
+                                "Jul",
+                                "Aug",
+                                "Sep",
+                              ]
+                          income:
+                            type: array
+                            items:
+                              type: number
+                            example:
+                              [
+                                1200,
+                                1300,
+                                1100,
+                                1500,
+                                1400,
+                                1600,
+                                1700,
+                                1800,
+                                2100,
+                              ]
+                      usersGrowth:
+                        type: object
+                        properties:
+                          months:
+                            type: array
+                            items:
+                              type: string
+                            example:
+                              [
+                                "Jan",
+                                "Feb",
+                                "Mar",
+                                "Apr",
+                                "May",
+                                "Jun",
+                                "Jul",
+                                "Aug",
+                                "Sep",
+                              ]
+                          count:
+                            type: array
+                            items:
+                              type: number
+                            example:
+                              [
+                                12000,
+                                13000,
+                                11000,
+                                15000,
+                                14000,
+                                16000,
+                                17000,
+                                18000,
+                                21000,
+                              ]
+                      totalUsers:
+                        type: number
+                        example: 568
+                      proUsers:
+                        type: number
+                        example: 568
+                      normalUsers:
+                        type: number
+                        example: 568
+                      newUsers:
+                        type: number
+                        example: 568
+                      newUsersData:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: 5f7b3b3b7f3b3b3b3b3b3b3b
+                            firstName:
+                              type: string
+                              example: john
+                            lastName:
+                              type: string
+                              example: doe
+                            email:
+                              type: string
+                              example: johndoe@gmail.com
+                            subscriptionType:
+                              type: string
+                              example: pro/intro...
+                            date:
+                              type: string
+                              example: 2020-10-02
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are not authorized to access this resource.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+
+  /admin/send-latest-updates:
+    post:
+      tags:
+        - Admin
+      summary: Send latest updates to all the subscribed emails
+      description: Send latest updates to all the subscribed emails
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  example: Latest updates sent successfully
+                title:
+                  type: string
+                  example: Latest updates
+      responses:
+        "200":
+          description: Latest updates sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Latest updates sent successfully
+                  status:
+                    type: boolean
+                    example: true
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+
+  /user/{id}:
+    get:
+      tags:
+        - User
+      summary: Get the user data of a specific user.
+      description: Get the user data of a specific user.
+      parameters:
+        - name: id
+          in: path
+          description: The id of the user to retrieve
+          required: true
+          schema:
+            type: string
+            example: 5f7b3b3b7f3b3b3b3b3b3b3b
+      responses:
+        "200":
+          description: User data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User retrieved successfully.
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b3b
+                      firstName:
+                        type: string
+                        example: john
+                      lastName:
+                        type: string
+                        example: doe
+                      email:
+                        type: string
+                        example: johndoe@gmail.com
+                      subscriptionType:
+                        type: string
+                        example: pro/intro...
+                      date:
+                        type: string
+                        example: 2020-10-02
+                      profilePic:
+                        type: string
+                        example: https://example.com/image.jpg
+                      creditsLeft:
+                        type: number
+                        example: 10
+                      referredBy:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b3b
+                      referralCode:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b3b
+                      referredCount:
+                        type: number
+                        example: 5
+                      referralBonusPoints:
+                        type: number
+                        example: 19
+                      referralEarnings:
+                        type: number
+                        example: 10
+
+        "404":
+          description: User Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User not found.
+                  status:
+                    type: boolean
+                    example: false"
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error"
+    patch:
+      tags:
+        - User
+      summary: Update the user data of a specific user.
+      description: Update the user data of a specific user.
+      parameters:
+        - name: id
+          in: path
+          description: The id of the user to update
+          required: true
+          schema:
+            type: string
+            example: 5f7b3b3b7f3b3b3b3b3b3b3b
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  example: john
+                lastName:
+                  type: string
+                  example: doe
+                subscriptionType:
+                  type: string
+                  example: pro/intro...
+                profilePic:
+                  type: string
+                  example: https://example.com/image.jpg
+                dob:
+                  type: string
+                  example: 2020-10-02
+                phoneNumber:
+                  type: string
+                  example: 1234567890
+                homeAddress:
+                  type: string
+                  example: 123, abc street, xyz city, 123456
+                city:
+                  type: string
+                  example: xyz
+                state:
+                  type: string
+                  example: abc
+                creditsLeft:
+                  type: number
+                  example: 10
+                referredCount:
+                  type: number
+                  example: 5
+                referralBonusPoints:
+                  type: number
+                  example: 19
+                referralEarnings:
+                  type: number
+                  example: 10
+      responses:
+        "200":
+          description: User data updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User updated successfully.
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b
+                      firstName:
+                        type: string
+                        example: john
+                      lastName:
+                        type: string
+                        example: doe
+                      dob:
+                        type: string
+                        example: 2020-10-02
+                      phoneNumber:
+                        type: string
+                        example: 1234567890
+                      homeAddress:
+                        type: string
+                        example: 123, abc street, xyz city, 123456
+                      city:
+                        type: string
+                        example: xyz
+                      state:
+                        type: string
+                        example: abc
+                      subscriptionType:
+                        type: string
+                        example: pro/intro...
+                      date:
+                        type: string
+                        example: 2020-10-02
+                      profilePic:
+                        type: string
+                        example: https://example.com/image.jpg
+                      referredBy:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b
+                      referralCode:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b
+                      creditsLeft:
+                        type: number
+                        example: 10
+                      referredCount:
+                        type: number
+                        example: 5
+                      referralBonusPoints:
+                        type: number
+                        example: 19
+                      referralEarnings:
+                        type: number
+                        example: 10
+        "404":
+          description: User Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User not found.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /user/{id}/notifications:
+    get:
+      tags:
+        - User
+      summary: Get the notifications of a specific user.
+      description: Get the notifications of a specific user.
+      parameters:
+        - name: id
+          in: path
+          description: The id of the user to retrieve notifications
+          required: true
+          schema:
+            type: string
+            example: 5f7b3b3b7f3b3b3b3b3b3b3b
+      responses:
+        "200":
+          description: Notifications retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Notifications retrieved successfully.
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 5f7b3b3b7f3b3b3b3b3b3b
+                        title:
+                          type: string
+                          example: Referal Bonus
+                        message:
+                          type: string
+                          example: You have a new notification.
+                        read:
+                          type: boolean
+                          example: false
+                        date:
+                          type: string
+                          example: 2020-10-02
+        "204":
+          description: No Content
+        "404":
+          description: User Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User not found.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+    put:
+      tags:
+        - User
+      summary: Mark all notifications as read
+      description: Mark all notifications as read
+      parameters:
+        - name: id
+          in: path
+          description: The id of the user to mark notifications as read
+          required: true
+          schema:
+            type: string
+            example: 5f7b3b3b7f3b3b3b3b3b3b3b
+      responses:
+        "200":
+          description: Notifications marked as read successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Notifications marked as read successfully.
+                  status:
+                    type: boolean
+                    example: true
+        "204":
+          description: No Content
+        "404":
+          description: User Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User not found.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /user/{id}/projects:
+    get:
+      tags:
+        - User
+      summary: Get the projects of a specific user.
+      description: Get the projects of a specific user.
+      parameters:
+        - name: id
+          in: path
+          description: The id of the user to retrieve projects
+          required: true
+          schema:
+            type: string
+            example: 5f7b3b3b7f3b3b3b3b3b3b3b
+      responses:
+        "200":
+          description: User projects retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User projects retrieved successfully.
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 5f7b3b3b7f3b3b3b3b3b3b
+                        name:
+                          type: string
+                          example: Project1
+                        date:
+                          type: string
+                          example: 2020-10-02
+                        projectVideoLink:
+                          type: string
+                          example: https://example.com/video.mp4
+                        projectAvatarPic:
+                          type: string
+                          example: https://example.com/image.jpg
+        "204":
+          description: No Content
+        "404":
+          description: User Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User not found.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /user/{id}/text-to-video:
+    post:
+      tags:
+        - User
+      summary: Convert text and audio --> video
+      description: Convert text  and audio --> video
+      parameters:
+        - name: id
+          in: path
+          description: The id of the user to convert text to video
+          required: true
+          schema:
+            type: string
+            example: 5f7b3b3b7f3b3b3b3b3b3b3b
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+                  example: This is a sample text
+                projectAvatarPic:
+                  type: string
+                  format: binary
+                  description: The avatar image to upload
+                textLanguage:
+                  type: string
+                  example: en
+                preferredVoice:
+                  type: string
+                  example: en-US-Wavenet-A
+                subtitles:
+                  type: boolean
+                  example: true
+                subtitlesLanguage:
+                  type: string
+                  example: en
+                audio:
+                  type: string
+                  format: binary
+                  description: The audio file to upload
+              required:
+                - text
+                - projectAvatarPic
+                - subtitles
+                - subtitlesLanguage
+                - textLanguage
+                - preferredVoice
+      responses:
+        "201":
+          description: Text to video conversion successfull
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Text to video conversion successfull
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b
+                      name:
+                        type: string
+                        example: Project1
+                      date:
+                        type: string
+                        example: 2020-10-02
+                      projectVideoLink:
+                        type: string
+                        example: https://example.com/video.mp4
+                      projectAvatarPic:
+                        type: string
+                        example: https://example.com/image.jpg
+                      subtitles:
+                        type: boolean
+                        example: false
+                      subtitlesLanguage:
+                        type: string
+                        example: en
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /user/{id}/audio-to-video:
+    post:
+      tags:
+        - User
+      summary: Convert audio and image --> video
+      description: Convert audio and image to an animated video with optional subtitles
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the user to convert audio to video
+          required: true
+          schema:
+            type: string
+            example: 5f7b3b3b7f3b3b3b3b3b3b3b
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                projectAvatarPic:
+                  type: string
+                  format: binary
+                  description: The avatar image to upload
+                subtitles:
+                  type: boolean
+                  example: true
+                subtitlesLanguage:
+                  type: string
+                  example: en
+                audio:
+                  type: string
+                  format: binary
+                  description: The audio file to upload
+              required:
+                - projectAvatarPic
+                - audio
+                - subtitles
+                - subtitlesLanguage
+      responses:
+        "201":
+          description: Audio to video conversion successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Audio to video conversion successful.
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b
+                      name:
+                        type: string
+                        example: Project1
+                      date:
+                        type: string
+                        example: 2020-10-02
+                      projectVideoLink:
+                        type: string
+                        example: https://example.com/video.mp4
+                      projectAvatarPic:
+                        type: string
+                        example: https://example.com/image.jpg
+                      subtitles:
+                        type: boolean
+                        example: false
+                      subtitlesLanguage:
+                        type: string
+                        example: en
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error for AUDIO + PHOTO + subtitle + subtitle language → VIDEO (animated video response, downloadable)
+
+  /user/{id}/video-translation:
+    post:
+      tags:
+        - User
+      summary: Translate video
+      description: Translate video
+      parameters:
+        - name: id
+          in: path
+          description: The id of the user to translate video
+          required: true
+          schema:
+            type: string
+            example: 5f7b3b3b7f3b3b3b3b3b3b3b
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                video:
+                  type: string
+                  format: binary
+                  description: The video file to upload
+                originalLanguage:
+                  type: string
+                  example: en
+                translationalLanguage:
+                  type: string
+                  example: fr
+                preferredVoice:
+                  type: string
+                  example: en-US-Wavenet-A
+                audio:
+                  type: string
+                  format: binary
+                  description: The audio file to upload
+                subtitles:
+                  type: boolean
+                  example: true
+                subtitlesLanguage:
+                  type: string
+                  example: fr
+              required:
+                - video
+                - originalLanguage
+                - translationalLanguage
+                - preferredVoice
+                - subtitles
+                - subtitlesLanguage
+      responses:
+        "201":
+          description: Video translation successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Video translation successful.
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b
+                      name:
+                        type: string
+                        example: Project1
+                      date:
+                        type: string
+                        example: 2020-10-02
+                      projectVideoLink:
+                        type: string
+                        example: https://example.com/video.mp4
+                      projectAvatarPic:
+                        type: string
+                        example: https://example.com/image.jpg
+                      subtitles:
+                        type: boolean
+                        example: false
+                      subtitlesLanguage:
+                        type: string
+                        example: fr
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error

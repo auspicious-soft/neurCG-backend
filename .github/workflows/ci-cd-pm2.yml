@@ -1,0 +1,138 @@
+name: CI/CD Pipeline with PM2
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    env:
+      EC2_SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+      EC2_URL: ${{ secrets.EC2_URL }}
+      EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Build the project
+      - name: Build the project
+        run: npm run build
+
+      # Step 5: Setup SSH for EC2
+      - name: Setup SSH for EC2
+        uses: webfactory/ssh-agent@v0.5.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+
+      # Step 6: Deploy to EC2
+      - name: Deploy to EC2
+        env:
+          MONGO_URL: ${{ secrets.MONGO_URL }}
+          PORT: ${{ secrets.PORT }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          COMPANY_RESEND_GMAIL_ACCOUNT: ${{ secrets.COMPANY_RESEND_GMAIL_ACCOUNT }}
+        run: |
+          echo "Creating app directory on EC2 instance..."
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=20 ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_URL }} "mkdir -p ~/app"
+          echo "Copying files to EC2 instance..."
+          rsync -avz --progress ./* ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_URL }}:~/app
+          echo "Running deployment script on EC2 instance..."
+          ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_URL }} << EOF
+              # Update system and install Node.js if not present
+              sudo apt-get update
+              if ! command -v node &> /dev/null; then
+              curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+              fi
+
+              # Install PM2 globally if not present
+              if ! command -v pm2 &> /dev/null; then
+              sudo npm install -g pm2
+              fi
+
+              # Navigate to app directory
+              cd ~/app
+
+              # Install dependencies
+              npm install
+
+              # Build the project (if applicable)
+              npm run build
+
+              # Set environment variables
+              cat <<EOT > .env
+              MONGO_URL=$MONGO_URL
+              PORT=$PORT
+              NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+              RESEND_API_KEY=$RESEND_API_KEY
+              COMPANY_RESEND_GMAIL_ACCOUNT=$COMPANY_RESEND_GMAIL_ACCOUNT
+              EOT
+
+              # Export environment variables
+              export MONGO_URL=$MONGO_URL
+              export PORT=$PORT
+              export NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+              export RESEND_API_KEY=$RESEND_API_KEY
+              export COMPANY_RESEND_GMAIL_ACCOUNT=$COMPANY_RESEND_GMAIL_ACCOUNT
+              
+              echo pwd
+              # Start the application with PM2
+              /usr/local/bin/pm2 start ~/app/src/app.ts --name "app" --interpreter "tsx" --env production
+
+              # Verify the process is running
+              /usr/local/bin/pm2 list
+
+              # Save PM2 process list and set to start on boot
+              /usr/local/bin/pm2 save
+              sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u $USER --hp /home/$USER
+
+              # Install Nginx if not present
+              if ! command -v nginx &> /dev/null; then
+                sudo apt-get install -y nginx
+              fi
+
+              # Create Nginx configuration
+              sudo tee /etc/nginx/sites-available/default > /dev/null << EOL
+              server {
+                  listen 80;
+                  server_name ${{ secrets.EC2_URL }};
+              
+                  location / {
+                      proxy_pass http://localhost:$PORT;
+                      proxy_http_version 1.1;
+                      proxy_set_header Upgrade \$http_upgrade;
+                      proxy_set_header Connection 'upgrade';
+                      proxy_set_header Host \$host;
+                      proxy_cache_bypass \$http_upgrade;
+                  }
+              }
+              EOL
+
+              # Restart Nginx
+              sudo systemctl restart nginx
+
+              # Clean up
+              npm cache clean --force
+              sudo apt-get clean
+              sudo rm -rf /var/lib/apt/lists/*
+
+              echo "Cleaning up log files..."
+              sudo find /var/log/ -type f -name "*.log" -exec truncate -s 0 {} +
+
+              echo "Checking disk usage after cleanup..."
+              df -h
+
+          EOF
