@@ -8,31 +8,9 @@ export const adminUserLoginSchema = z.object({
 })
 
 
-export const addWellnessSchema = z.object({
-    title: z.string(),
-    assignTo: z.enum(["client", "therapist"]),
-    link: z.string(),
-    attachment: z.string(),
-    description: z.string(),
+export const sendNotificationToUserSchema = z.object({
+    title: z.string().min(1),
+    message: z.string().min(1)
 }).strict({
     message: "Bad payload present in the data"
-})
-
-export const addUserSchema = z.object({
-    fullName: z.string(),
-    email: z.string().email(),
-    password: z.string(),
-    role: z.enum([
-        "Support Team Agent",
-        "Support Team Supervisor",
-        "Office Admin",
-        "Clinical Director",
-        "QP / Supervisor",
-        "Director of Operation/ Billing",
-        "Director",
-        "Clinician",
-        "Peer Support Specialist",
-        "Para Professional",
-        "AP"
-    ]),
 })

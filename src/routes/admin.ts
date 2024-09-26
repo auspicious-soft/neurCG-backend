@@ -16,6 +16,7 @@ import { upload } from "../configF/multer";
 import { checkMulter } from "../lib/errors/error-response-handler"
 import { forgotPassword } from "src/controllers/admin/admin";
 import { verifyOtpPasswordReset } from "src/controllers/user/user";
+import { sendNotificationToUser } from "src/controllers/notifications/notifications";
 
 
 
@@ -28,6 +29,7 @@ router.patch("/new-password-otp-verified", newPassswordAfterOTPVerified)
 
 
 router.post("/send-latest-updates", sendLatestUpdates)
+router.post("/send-notification/:id", sendNotificationToUser)
 router.get("/users", getAllUsers)
 router.get("/users/:id", getAUser)
 router.get("/dashboard", getDashboardStats)
