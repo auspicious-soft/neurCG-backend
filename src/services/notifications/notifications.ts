@@ -17,7 +17,6 @@ export const getAllNotificationsOfUserService = async (id: string, res: Response
     const user = await usersModel.findById(id)
     if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
     const results = await notificationsModel.find({ userId: id }).sort({ createdAt: -1 }).select("-__v -userId")
-    if (!results.length) return errorResponseHandler("No notifications found", httpStatusCode.NO_CONTENT, res)
     return { success: true, message: "Notifications fetched successfully", data: results }
 }
 
