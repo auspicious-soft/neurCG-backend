@@ -10,6 +10,7 @@ import {
        forgotPasswordService,
     getDashboardStatsService,
     sendLatestUpdatesService,
+    getAllUsersService
     // updateDashboardStatsService 
 } from "../../services/admin/admin-service";
 import { errorParser } from "../../lib/errors/error-response-handler";
@@ -108,6 +109,27 @@ export const newPassswordAfterOTPVerified = async (req: Request, res: Response) 
         return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" });
     }
 }
+
+export const getAllUsers = async (req: Request, res: Response) => {
+     try {
+        const response = await getAllUsersService(req.query)
+        return res.status(httpStatusCode.OK).json(response)
+    } catch (error: any) {
+        const { code, message } = errorParser(error)
+        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" });
+    }
+}
+
+
+export const sendLatestUpdates = async (req: Request, res: Response) => {
+    try {
+        const response = await sendLatestUpdatesService(req.body, res)
+        return res.status(httpStatusCode.OK).json(response)
+    } catch (error: any) {
+        const { code, message } = errorParser(error)
+        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" });
+    }
+}
 // Dashboard
 export const getDashboardStats = async (req: Request, res: Response) => {
     try {
@@ -119,15 +141,6 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     }
 }
 
-export const sendLatestUpdates = async (req: Request, res: Response) => {
-    try {
-        const response = await sendLatestUpdatesService(req.body, res)
-        return res.status(httpStatusCode.OK).json(response)
-    } catch (error: any) {
-        const { code, message } = errorParser(error)
-        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" });
-    }
-}
 
 
 

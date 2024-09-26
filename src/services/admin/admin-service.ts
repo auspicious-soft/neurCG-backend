@@ -9,6 +9,7 @@ import { sendLatestUpdatesEmail, sendPasswordResetEmail } from "src/utils/mails/
 import { generatePasswordResetToken, getPasswordResetTokenByToken } from "src/utils/mails/token";
 import mongoose from "mongoose";
 import { passwordResetTokenModel } from "src/models/password-token-schema";
+import { usersModel } from "src/models/user/user-schema";
 // import { clientModel } from "../../models/user/user-schema";
 // import { passswordResetSchema, testMongoIdSchema } from "../../validation/admin-user";
 // import { generatePasswordResetToken, getPasswordResetTokenByToken } from "../../lib/send-mail/tokens";
@@ -78,14 +79,30 @@ export const newPassswordAfterOTPVerifiedService = async (payload: { password: s
     }
 }
 
-
-// Dashboard
-export const getDashboardStatsService = async (payload: any, res: Response) => {
-
-    return { success: true, message: "Dashboard stats fetched successfully" }
-
+export const getAllUsersService = async (payload: any) => {
+    const page = parseInt(payload.page as string) || 1
+    const limit = parseInt(payload.limit as string) || 10
+    const offset = (page - 1) * limit
+    const { query, sort } = queryBuilder(payload, ['firstName', 'lastName'])
+    const totalDataCount = Object.keys(query).length < 1 ? await usersModel.countDocuments() : await usersModel.countDocuments(query)
+    const results = await usersModel.find(query).sort(sort).skip(offset).limit(limit).select("-__v")
+    if (results.length) return {
+        page,
+        limit,
+        success: true,
+        total: totalDataCount,
+        data: results
+    }
+    else {
+        return {
+            data: [],
+            page,
+            limit,
+            success: false,
+            total: 0
+        }
+    }
 }
-
 
 export const sendLatestUpdatesService = async (payload: any, res: Response) => {
     const { message, title } = payload;
@@ -105,6 +122,13 @@ export const sendLatestUpdatesService = async (payload: any, res: Response) => {
         message: "Latest updates sent successfully"
     }
 }
+// Dashboard
+export const getDashboardStatsService = async (payload: any, res: Response) => {
+
+    return { success: true, message: "Dashboard stats fetched successfully" }
+
+}
+
 // Client Services
 // export const getClientsService = async (payload: any) => {
 //     const page = parseInt(payload.page as string) || 1

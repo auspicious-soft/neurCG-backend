@@ -355,7 +355,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /forgot-password:
+  /(admin or user)/forgot-password:
     post:
       tags:
         - Authentication
@@ -408,7 +408,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /verify-otp:
+  /(admin or user)/verify-otp:
     post:
       tags:
         - Authentication
@@ -464,7 +464,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /new-password-otp-verified:
+  /(admin or user)/new-password-otp-verified:
     post:
       tags:
         - Authentication

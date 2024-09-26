@@ -16,7 +16,9 @@ export const signupService = async (payload: any, res: Response) => {
     const newPassword = bcrypt.hashSync(payload.password, 10)
     payload.password = newPassword
     const genId = customAlphabet('1234567890', 8)
+    const identifier = customAlphabet('0123456789', 3)
     payload.myReferralCode = `${process.env.NEXT_PUBLIC_APP_URL}/register?referralCode=${genId()}`
+    payload.identifier = identifier()
     new usersModel({ ...payload, email: payload.email.toLowerCase().trim() }).save()
     return { success: true, message: "Client signup successfull" }
 }

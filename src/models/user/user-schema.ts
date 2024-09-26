@@ -1,6 +1,11 @@
 import mongoose, { Schema } from "mongoose"
 
 const usersSchema = new mongoose.Schema({
+    identifier: {
+        type: String,
+        required: true,
+        unique: true
+    },
     firstName: {
         type: String,
         requried: true
