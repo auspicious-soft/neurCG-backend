@@ -5,18 +5,26 @@ import {
     // verifySession,
     //  passwordReset, forgotPassword, newPassswordAfterEmailSent, 
     getDashboardStats,
-    sendLatestUpdates
+    sendLatestUpdates,
+    newPassswordAfterOTPVerified
     //  updateDashboardStats
 } from "../controllers/admin/admin";
 // import { checkAdminAuth } from "../middleware/check-auth";
 import { upload } from "../configF/multer";
 import { checkMulter } from "../lib/errors/error-response-handler"
+import { forgotPassword } from "src/controllers/admin/admin";
+import { verifyOtpPasswordReset } from "src/controllers/user/user";
 
 
 
 const router = Router();
 
 router.post("/login", login)
+router.patch("/forgot-password", forgotPassword)
+router.post("/verify-otp", verifyOtpPasswordReset)
+router.patch("/new-password-otp-verified", newPassswordAfterOTPVerified)
+
+
 router.get("/dashboard", getDashboardStats)
 router.post("/send-latest-updates", sendLatestUpdates)
 

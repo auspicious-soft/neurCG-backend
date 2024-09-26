@@ -5,7 +5,10 @@ import { errorResponseHandler } from "../../lib/errors/error-response-handler";
 import { httpStatusCode } from "../../lib/constant";
 import { queryBuilder } from "../../utils";
 import { subscribedEmailsModel } from "src/models/subscribed-email-schema";
-import { sendLatestUpdatesEmail } from "src/utils/mails/mail";
+import { sendLatestUpdatesEmail, sendPasswordResetEmail } from "src/utils/mails/mail";
+import { generatePasswordResetToken, getPasswordResetTokenByToken } from "src/utils/mails/token";
+import mongoose from "mongoose";
+import { passwordResetTokenModel } from "src/models/password-token-schema";
 // import { clientModel } from "../../models/user/user-schema";
 // import { passswordResetSchema, testMongoIdSchema } from "../../validation/admin-user";
 // import { generatePasswordResetToken, getPasswordResetTokenByToken } from "../../lib/send-mail/tokens";
@@ -41,6 +44,39 @@ export const loginService = async (payload: loginInterface, res: Response) => {
     return { success: true, message: "Admin Login successfull", data: tokenPayload }
 }
 
+export const forgotPasswordService = async (email: string, res: Response) => {
+    const admin = await adminModel.findOne({ email })
+    if (!admin) return errorResponseHandler("Email not found", httpStatusCode.NOT_FOUND, res)
+    const passwordResetToken = await generatePasswordResetToken(email)
+    if (passwordResetToken !== null) {
+        await sendPasswordResetEmail(email, passwordResetToken.token)
+        return { success: true, message: "Password reset email sent with otp" }
+    }
+}
+
+export const newPassswordAfterOTPVerifiedService = async (payload: { password: string, otp: string }, res: Response, session: mongoose.mongo.ClientSession) => {
+    const { password, otp } = payload
+    const existingToken = await getPasswordResetTokenByToken(otp)
+    if (!existingToken) return errorResponseHandler("Invalid OTP", httpStatusCode.BAD_REQUEST, res)
+
+    const hasExpired = new Date(existingToken.expires) < new Date()
+    if (hasExpired) return errorResponseHandler("OTP expired", httpStatusCode.BAD_REQUEST, res)
+
+    const existingAdmin = await adminModel.findOne({ email: existingToken.email }).session(session)
+    if (!existingAdmin) return errorResponseHandler("Admin email not found", httpStatusCode.NOT_FOUND, res)
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+    const response = await adminModel.findByIdAndUpdate(existingAdmin._id, { password: hashedPassword }, { session, new: true })
+    await passwordResetTokenModel.findByIdAndDelete(existingToken._id).session(session)
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+        success: true,
+        message: "Password updated successfully",
+        data: response
+    }
+}
 
 
 // Dashboard

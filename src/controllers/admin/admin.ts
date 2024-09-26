@@ -5,16 +5,17 @@ import {
     loginService,
     //  editInfoService, 
     //  getInfoService,
-    //   newPassswordAfterEmailSentService, 
+    newPassswordAfterOTPVerifiedService, 
     //   passwordResetService,
-    //    forgotPasswordService,
+       forgotPasswordService,
     getDashboardStatsService,
     sendLatestUpdatesService,
     // updateDashboardStatsService 
 } from "../../services/admin/admin-service";
 import { errorParser } from "../../lib/errors/error-response-handler";
 import { httpStatusCode } from "../../lib/constant";
-import { send } from "process";
+import { z } from "zod";
+import mongoose from "mongoose";
 
 
 //Auth Controllers
@@ -74,43 +75,39 @@ export const login = async (req: Request, res: Response) => {
 //     }
 // }
 
-// export const forgotPassword = async (req: Request, res: Response) => {
-//     const { email } = req.body
-//     const validation = z.string().email().safeParse(email)
+export const forgotPassword = async (req: Request, res: Response) => {
+    const { email } = req.body
+    const validation = z.string().email().safeParse(email)
 
-//     if (!validation.success) return res.status(httpStatusCode.BAD_REQUEST).json({ success: false, message: formatZodErrors(validation.error) })
-//     const session = await mongoose.startSession();
-//     session.startTransaction();
-//     try {
-//         const response = await forgotPasswordService(email, res, session)
-//         return res.status(httpStatusCode.OK).json(response)
-//     }
-//     catch (error: any) {
-//         const { code, message } = errorParser(error)
-//         await session.abortTransaction();
-//         session.endSession();
-//         return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" });
-//     }
-// }
+    if (!validation.success) return res.status(httpStatusCode.BAD_REQUEST).json({ success: false, message: formatZodErrors(validation.error) })
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const response = await forgotPasswordService(email, res)
+        return res.status(httpStatusCode.OK).json(response)
+    }
+    catch (error: any) {
+        const { code, message } = errorParser(error)
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" });
+    }
+}
 
-// export const newPassswordAfterEmailSent = async (req: Request, res: Response) => {
-//     const { password } = req.body
-//     const validation = passwordSchema.safeParse(password)
-//     if (!validation.success) return res.status(httpStatusCode.BAD_REQUEST).json({ success: false, message: formatZodErrors(validation.error) })
-//     const session = await mongoose.startSession();
-//     session.startTransaction();
-//     try {
-//         const response = await newPassswordAfterEmailSentService(req.body, res, session)
-//         return res.status(httpStatusCode.OK).json(response)
-//     }
-//     catch (error: any) {
-//         const { code, message } = errorParser(error)
-//         await session.abortTransaction();
-//         session.endSession();
-//         return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" });
-//     }
-// }
-
+export const newPassswordAfterOTPVerified = async (req: Request, res: Response) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    try {
+        const response = await newPassswordAfterOTPVerifiedService(req.body, res, session)
+        return res.status(httpStatusCode.OK).json(response)
+    }
+    catch (error: any) {
+        const { code, message } = errorParser(error)
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" });
+    }
+}
 // Dashboard
 export const getDashboardStats = async (req: Request, res: Response) => {
     try {
