@@ -4,7 +4,6 @@ import { errorParser } from "src/lib/errors/error-response-handler";
 import { sendNotificationToUserService } from "src/services/notifications/notifications";
 import { sendNotificationToUserSchema } from "src/validation/admin-user";
 import { formatZodErrors } from "src/validation/format-zod-errors";
-import { z } from "zod";
 
 export const sendNotificationToUser = async (req: Request, res: Response) => {
     const validation = sendNotificationToUserSchema.safeParse(req.body)
