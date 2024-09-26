@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { upload } from "../configF/multer";
 import { checkMulter } from "../lib/errors/error-response-handler"
-import { login, signup,  forgotPassword, verifyOtpPasswordReset, newPassswordAfterOTPVerified, passwordReset, getClientInfo, editClientInfo } from "../controllers/user/user";
+import { login, signup,  forgotPassword, verifyOtpPasswordReset, newPassswordAfterOTPVerified, passwordReset, getUserInfo, editUserInfo } from "../controllers/user/user";
 const router = Router();
 
 router.post("/signup", signup)
@@ -12,6 +12,6 @@ router.patch("/new-password-otp-verified", newPassswordAfterOTPVerified)
 router.patch("/update-password/:id", passwordReset)
 
 
-router.route("/:id").get(getClientInfo).put(upload.single("profilePic"), checkMulter, editClientInfo)
+router.route("/:id").get(getUserInfo).put(upload.single("profilePic"), checkMulter, editUserInfo)
 
 export { router }

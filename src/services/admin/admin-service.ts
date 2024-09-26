@@ -104,6 +104,16 @@ export const getAllUsersService = async (payload: any) => {
     }
 }
 
+export const getAUserService = async (id: string, res: Response) => {
+    const user = await usersModel.findById(id)
+    if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
+    return {
+        success: true,
+        message: "User fetched successfully",
+        data: user
+    }
+}
+
 export const sendLatestUpdatesService = async (payload: any, res: Response) => {
     const { message, title } = payload;
 

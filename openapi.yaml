@@ -1120,7 +1120,7 @@ paths:
                       referredBy:
                         type: string
                         example: 5f7b3b3b7f3b3b3b3b3b3b3b
-                      referralCode:
+                      myReferralCode:
                         type: string
                         example: 5f7b3b3b7f3b3b3b3b3b3b3b
                       referredCount:
@@ -1268,7 +1268,7 @@ paths:
                       referredBy:
                         type: string
                         example: 5f7b3b3b7f3b3b3b3b3b3b
-                      referralCode:
+                      myReferralCode:
                         type: string
                         example: 5f7b3b3b7f3b3b3b3b3b3b
                       creditsLeft:

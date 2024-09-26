@@ -7,7 +7,8 @@ import {
     getDashboardStats,
     sendLatestUpdates,
     newPassswordAfterOTPVerified,
-    getAllUsers
+    getAllUsers,
+    getAUser
     //  updateDashboardStats
 } from "../controllers/admin/admin";
 // import { checkAdminAuth } from "../middleware/check-auth";
@@ -28,6 +29,7 @@ router.patch("/new-password-otp-verified", newPassswordAfterOTPVerified)
 
 router.post("/send-latest-updates", sendLatestUpdates)
 router.get("/users", getAllUsers)
+router.get("/users/:id", getAUser)
 router.get("/dashboard", getDashboardStats)
 
 

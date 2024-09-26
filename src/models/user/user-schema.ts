@@ -32,15 +32,17 @@ const usersSchema = new mongoose.Schema({
     homeAddress: { type: String },
     creditsLeft: { type: Number, default: 0 },
     profilePic: { type: String },
+    referredBy: {
+        type: Schema.ObjectId,
+        ref: "users"
+    },
     myReferralCode: {
         type: String,
         unique: true
     },
-    referredBy: {
-        type: Schema.ObjectId,
-        ref: "users"
-    }
-
-});
+    referredCount: { type: Number, default: 0 },
+    referralBonusPoints: { type: Number, default: 0 },
+    referralEarnings: { type: Number, default: 0 }
+})
 
 export const usersModel = mongoose.model("users", usersSchema)

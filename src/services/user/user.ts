@@ -94,9 +94,9 @@ export const passwordResetService = async (req: Request, res: Response) => {
     }
 }
 
-export const getClientInfoService = async (id: string, res: Response) => {
+export const getUserInfoService = async (id: string, res: Response) => {
     const client = await usersModel.findById(id)
-    if (!client) return errorResponseHandler("Client not found", httpStatusCode.NOT_FOUND, res)
+    if (!client) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
     return {
         success: true,
         message: "Client info fetched successfully",
@@ -104,10 +104,10 @@ export const getClientInfoService = async (id: string, res: Response) => {
     }
 }
 
-export const editClientInfoService = async (payload: any, res: Response) => {
+export const editUserInfoService = async (payload: any, res: Response) => {
     const { id } = payload
     const client = await usersModel.findById(id)
-    if (!client) return errorResponseHandler("Client not found", httpStatusCode.NOT_FOUND, res)
+    if (!client) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
 
     const updatedClient = await usersModel.findByIdAndUpdate(id, payload, { new: true })
     return {

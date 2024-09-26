@@ -3,7 +3,7 @@ import { httpStatusCode } from "../../lib/constant"
 import { errorParser } from "../../lib/errors/error-response-handler"
 import { clientEditSchema, clientSignupSchema, passswordResetSchema } from "../../validation/client-user"
 import { formatZodErrors } from "../../validation/format-zod-errors"
-import { loginService, signupService, forgotPasswordService, newPassswordAfterOTPVerifiedService, passwordResetService, getClientInfoService, editClientInfoService, verifyOtpPasswordResetService } from "../../services/user/user"
+import { loginService, signupService, forgotPasswordService, newPassswordAfterOTPVerifiedService, passwordResetService, getUserInfoService, editUserInfoService, verifyOtpPasswordResetService } from "../../services/user/user"
 import { z } from "zod"
 import mongoose from "mongoose"
 import { adminUserLoginSchema } from "src/validation/admin-user"
@@ -88,9 +88,9 @@ export const passwordReset = async (req: Request, res: Response) => {
 }
 
 
-export const getClientInfo = async (req: Request, res: Response) => {
+export const getUserInfo = async (req: Request, res: Response) => {
     try {
-        const response = await getClientInfoService(req.params.id, res)
+        const response = await getUserInfoService(req.params.id, res)
         return res.status(httpStatusCode.OK).json(response)
     } catch (error: any) {
         const { code, message } = errorParser(error)
@@ -98,7 +98,7 @@ export const getClientInfo = async (req: Request, res: Response) => {
     }
 }
 
-export const editClientInfo = async (req: Request, res: Response) => {
+export const editUserInfo = async (req: Request, res: Response) => {
     const payload = { ...req.body, profilePic: req.file?.filename }
     const newPayload = { ...payload, id: req.params.id }
     if (payload.dob && typeof payload.dob === 'string') {
@@ -107,7 +107,7 @@ export const editClientInfo = async (req: Request, res: Response) => {
     const validation = clientEditSchema.safeParse(payload)
     if (!validation.success) return res.status(httpStatusCode.BAD_REQUEST).json({ success: false, message: formatZodErrors(validation.error) })
     try {
-        const response = await editClientInfoService(newPayload, res)
+        const response = await editUserInfoService(newPayload, res)
         return res.status(httpStatusCode.OK).json(response)
     } catch (error: any) {
         const { code, message } = errorParser(error)
