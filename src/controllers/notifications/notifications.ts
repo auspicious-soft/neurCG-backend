@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { httpStatusCode } from "src/lib/constant";
 import { errorParser } from "src/lib/errors/error-response-handler";
-import { sendNotificationToUserService } from "src/services/notifications/notifications";
+import { sendNotificationToUserService, getAllNotificationsOfUserService, markAllNotificationsAsReadService } from "src/services/notifications/notifications";
 import { sendNotificationToUserSchema } from "src/validation/admin-user";
 import { formatZodErrors } from "src/validation/format-zod-errors";
 
@@ -11,6 +11,26 @@ export const sendNotificationToUser = async (req: Request, res: Response) => {
     try {
         const response = await sendNotificationToUserService({ id: req.params.id, ...req.body }, res)
         return res.status(httpStatusCode.CREATED).json(response)
+    } catch (error: any) {
+        const { code, message } = errorParser(error)
+        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" })
+    }
+}
+
+export const getAllNotificationsOfUser = async (req: Request, res: Response) => {
+    try {
+        const response = await getAllNotificationsOfUserService(req.params.id, res)
+        return res.status(httpStatusCode.OK).json(response)
+    } catch (error: any) {
+        const { code, message } = errorParser(error)
+        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" })
+    }
+}
+
+export const markAllNotificationsAsRead = async (req: Request, res: Response) => {
+    try {
+        const response = await markAllNotificationsAsReadService(req.params.id, res)
+        return res.status(httpStatusCode.OK).json(response)
     } catch (error: any) {
         const { code, message } = errorParser(error)
         return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" })

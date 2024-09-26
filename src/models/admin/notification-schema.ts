@@ -21,6 +21,8 @@ const notificationsSchema = new Schema({
         type: Date,
         default: Date.now
     },
-}) 
+},
+    { timestamps: true }
+)
 
 export const notificationsModel = model('notifications', notificationsSchema)
