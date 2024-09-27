@@ -8,7 +8,7 @@ import {
     sendLatestUpdates,
     newPassswordAfterOTPVerified,
     getAllUsers,
-    getAUser
+    getAUser,
     //  updateDashboardStats
 } from "../controllers/admin/admin";
 // import { checkAdminAuth } from "../middleware/check-auth";
@@ -16,7 +16,7 @@ import { upload } from "../configF/multer";
 import { checkMulter } from "../lib/errors/error-response-handler"
 import { forgotPassword } from "src/controllers/admin/admin";
 import { verifyOtpPasswordReset } from "src/controllers/user/user";
-import { sendNotificationToUser } from "src/controllers/notifications/notifications";
+import { sendNotificationToUser, sendNotificationToUsers } from "src/controllers/notifications/notifications";
 
 
 
@@ -29,7 +29,8 @@ router.patch("/new-password-otp-verified", newPassswordAfterOTPVerified)
 
 
 router.post("/send-latest-updates", sendLatestUpdates)
-router.post("/send-notification/:id", sendNotificationToUser)
+router.post("/send-notification", sendNotificationToUsers)
+router.post("/send-notification-to-specific-users", sendNotificationToUser)
 router.get("/users", getAllUsers)
 router.get("/users/:id", getAUser)
 router.get("/dashboard", getDashboardStats)

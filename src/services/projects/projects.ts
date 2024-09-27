@@ -41,3 +41,8 @@ export const getUserProjectsService = async (payload: any, res: Response) => {
         }
     }
 }
+
+export const convertTextToVideoService = async (payload: any, res: Response) => {
+    const { id, text } = payload
+    const user = await usersModel.findById(id)
+}

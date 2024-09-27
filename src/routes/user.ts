@@ -3,7 +3,7 @@ import { upload } from "../configF/multer";
 import { checkMulter } from "../lib/errors/error-response-handler"
 import { login, signup,  forgotPassword, verifyOtpPasswordReset, newPassswordAfterOTPVerified, passwordReset, getUserInfo, editUserInfo } from "../controllers/user/user";
 import { getAllNotificationsOfUser, markAllNotificationsAsRead } from "src/controllers/notifications/notifications";
-import { getUserProjects } from "src/controllers/projects/projects";
+import { getUserProjects, convertTextToVideo } from "src/controllers/projects/projects";
 
 const router = Router();
 
@@ -20,5 +20,6 @@ router.route("/:id").get(getUserInfo).put(upload.single("profilePic"), checkMult
 router.route("/:id/notifications").get(getAllNotificationsOfUser).put(markAllNotificationsAsRead)
 
 router.get("/:id/projects", getUserProjects)
+router.post("/:id/text-to-video", convertTextToVideo)
 
 export { router }
