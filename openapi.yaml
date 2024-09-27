@@ -1061,20 +1061,12 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /admin/send-notification/{id}✅:
+  /admin/send-notification✅:
     post:
       tags:
-        - Admin
-      summary: Send notification to a user
-      description: Send notification to a user
-      parameters:
-        - name: id
-          in: path
-          description: The id of the user to send notification 
-          required: true
-          schema:
-            type: string
-            example: 5f7b3b3b7f3b3b3b3b3b3b3b
+        - Admin 
+      summary: Send notification to all the users
+      description: Send notification to all the users
       requestBody:
         required: true
         content:
@@ -1088,6 +1080,55 @@ paths:
                 message:
                   type: string
                   example: You have a new notification.
+      responses:
+        "201":
+          description: Notification sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Notification sent successfully.
+                  status:
+                    type: boolean
+                    example: true
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string  
+                    example: Internal Server Error 
+  
+  /admin/send-notification-to-specific-users✅:
+    post:
+      tags:
+        - Admin
+      summary: Send notification to a speicific users
+      description: Send notification to a speicific users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: Referal Bonus
+                message:
+                  type: string
+                  example: You have a new notification.
+                ids: 
+                  type: array
+                  items: 
+                    type: string
+                    example: 5f8d9f1a2d2a1f001d0e00d0
               required:
                 - title
                 - message
@@ -1115,6 +1156,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
+  
   /user/{id}✅:
     get:
       tags:
