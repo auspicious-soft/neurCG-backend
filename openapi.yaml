@@ -808,7 +808,7 @@ paths:
                             projectVideoLink:
                               type: string
                               example: https://example.com/video.mp4
-                            projectAvatarPic:
+                            projectAvatar:
                               type: string
                               example: https://example.com/image.jpg
                       creditsLeft:
@@ -1484,7 +1484,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /user/{id}/projects:
+  /user/{id}/projects✅:
     get:
       tags:
         - User
@@ -1513,25 +1513,51 @@ paths:
                     type: boolean
                     example: true
                   data:
-                    type: array
+                    type: object
                     items:
                       type: object
-                      properties:
-                        id:
-                          type: string
-                          example: 5f7b3b3b7f3b3b3b3b3b3b
-                        name:
-                          type: string
-                          example: Project1
-                        date:
-                          type: string
-                          example: 2020-10-02
-                        projectVideoLink:
-                          type: string
-                          example: https://example.com/video.mp4
-                        projectAvatarPic:
-                          type: string
-                          example: https://example.com/image.jpg
+                    properties:
+                      recentProjects:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: 5f7b3b3b7f3b3b3b3b3b3b
+                            name:
+                              type: string
+                              example: Project1
+                            date:
+                              type: string
+                              example: 2020-10-02
+                            projectVideoLink:
+                              type: string
+                              example: https://example.com/video.mp4
+                            projectAvatar:
+                              type: string
+                              example: https://example.com/image.jpg
+                      oldProjects:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              example: 5f7b3b3b7f3b3b3b3b3b3b
+                            name:
+                              type: string
+                              example: Project1
+                            date:
+                              type: string
+                              example: 2020-10-02
+                            projectVideoLink:
+                              type: string
+                              example: https://example.com/video.mp4
+                            projectAvatar:
+                              type: string  
+                              example: https://example.com/image.jpg
+                      
         "204":
           description: No Content
         "404":
@@ -1581,7 +1607,7 @@ paths:
                 text:
                   type: string
                   example: This is a sample text
-                projectAvatarPic:
+                projectAvatar:
                   type: string
                   format: binary
                   description: The avatar image to upload
@@ -1603,7 +1629,7 @@ paths:
                   description: The audio file to upload
               required:
                 - text
-                - projectAvatarPic
+                - projectAvatar
                 - subtitles
                 - subtitlesLanguage
                 - textLanguage
@@ -1637,7 +1663,7 @@ paths:
                       projectVideoLink:
                         type: string
                         example: https://example.com/video.mp4
-                      projectAvatarPic:
+                      projectAvatar:
                         type: string
                         example: https://example.com/image.jpg
                       subtitles:
@@ -1676,7 +1702,7 @@ paths:
             schema:
               type: object
               properties:
-                projectAvatarPic:
+                projectAvatar:
                   type: string
                   format: binary
                   description: The avatar image to upload
@@ -1691,7 +1717,7 @@ paths:
                   format: binary
                   description: The audio file to upload
               required:
-                - projectAvatarPic
+                - projectAvatar
                 - audio
                 - subtitles
                 - subtitlesLanguage
@@ -1724,7 +1750,7 @@ paths:
                       projectVideoLink:
                         type: string
                         example: https://example.com/video.mp4
-                      projectAvatarPic:
+                      projectAvatar:
                         type: string
                         example: https://example.com/image.jpg
                       subtitles:
@@ -1824,7 +1850,7 @@ paths:
                       projectVideoLink:
                         type: string
                         example: https://example.com/video.mp4
-                      projectAvatarPic:
+                      projectAvatar:
                         type: string
                         example: https://example.com/image.jpg
                       subtitles:
