@@ -8,6 +8,7 @@ import { httpStatusCode } from "../../lib/constant"
 import mongoose from "mongoose"
 import { passwordResetTokenModel } from "../../models/password-token-schema"
 import { customAlphabet } from "nanoid"
+import { increaseReferredCount } from "src/utils"
 
 
 export const signupService = async (payload: any, res: Response) => {
@@ -19,6 +20,13 @@ export const signupService = async (payload: any, res: Response) => {
     const identifier = customAlphabet('0123456789', 3)
     payload.myReferralCode = `${process.env.NEXT_PUBLIC_APP_URL}/register?referralCode=${genId()}`
     payload.identifier = identifier()
+    if(payload.referralCode) {
+        const referredBy = await usersModel.findOne({ myReferralCode: payload.referralCode })
+        if (referredBy) {
+            payload.referredBy = referredBy._id           //Set my referred by
+            await increaseReferredCount(referredBy._id)   //Increase referred count of the person who referred me
+        }
+    }
     new usersModel({ ...payload, email: payload.email.toLowerCase().trim() }).save()
     return { success: true, message: "Client signup successfull" }
 }

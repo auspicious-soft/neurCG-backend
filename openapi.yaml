@@ -7,7 +7,7 @@ servers:
   - url: NODE_BACKEND_URL/api
 
 paths:
-  /landing/contact-us:
+  /landing/contact-us✅:
     post:
       tags:
         - Contact Us
@@ -56,7 +56,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /landing/latest-updates:
+  /landing/latest-updates✅:
     post:
       tags:
         - Contact Us
@@ -96,7 +96,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /admin/login:
+  /admin/login✅:
     post:
       tags:
         - Authentication
@@ -184,7 +184,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /user/login:
+  /user/login✅:
     post:
       tags:
         - Authentication
@@ -272,7 +272,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /user/signup:
+  /user/signup✅:
     post:
       tags:
         - Authentication
@@ -355,7 +355,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /(admin or user)/forgot-password:
+  /(admin or user)/forgot-password✅:
     post:
       tags:
         - Authentication
@@ -408,7 +408,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /(admin or user)/verify-otp:
+  /(admin or user)/verify-otp✅:
     post:
       tags:
         - Authentication
@@ -464,7 +464,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /(admin or user)/new-password-otp-verified:
+  /(admin or user)/new-password-otp-verified✅:
     post:
       tags:
         - Authentication
@@ -521,7 +521,7 @@ paths:
                     type: string
                     example: Internal Server Error
 
-  /admin/users:
+  /admin/users✅:
     get:
       tags:
         - Admin
@@ -722,7 +722,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /admin/users/{id}:
+  /admin/users/{id}✅:
     get:
       tags:
         - Admin
@@ -1018,7 +1018,7 @@ paths:
                     type: string
                     example: Internal Server Error
 
-  /admin/send-latest-updates:
+  /admin/send-latest-updates✅:
     post:
       tags:
         - Admin
@@ -1061,7 +1061,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /admin/send-notification/{id}:
+  /admin/send-notification/{id}✅:
     post:
       tags:
         - Admin
@@ -1115,7 +1115,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /user/{id}:
+  /user/{id}✅:
     get:
       tags:
         - User
@@ -1359,7 +1359,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /user/{id}/notifications:
+  /user/{id}/notifications✅:
     get:
       tags:
         - User

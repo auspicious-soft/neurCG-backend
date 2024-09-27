@@ -1,5 +1,6 @@
 import { Request, Response } from "express"
-import { SortOrder } from "mongoose"
+import mongoose, { SortOrder } from "mongoose"
+import { usersModel } from "src/models/user/user-schema"
 
 export const checkValidAdminRole = (req: Request, res:Response, next: any) => {
     const { role } = req.headers
@@ -25,4 +26,8 @@ export const convertToBoolean = (value: string) => {
     if (value === 'true') return true
     else if (value === 'false') return false
     else return value
+}
+
+export const increaseReferredCount = async (id: mongoose.Types.ObjectId) => {
+    await usersModel.findByIdAndUpdate(id, { $inc: { referredCount: 1 } })
 }

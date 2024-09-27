@@ -5,7 +5,7 @@ export const clientSignupSchema = z.object({
     password: z.string().min(6),
     firstName: z.string().min(1),
     lastName: z.string().min(1),
-    referredBy: z.string().optional(),
+    referralCode: z.string().optional(),
 }).strict({
     message: "Bad payload present in the data"
 });
