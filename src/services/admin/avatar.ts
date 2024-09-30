@@ -6,14 +6,15 @@ import { avatarModel } from "src/models/admin/avatar-schema";
 export const postAvatarService = async (payload: any, res: Response) => {
     const { avatarPic } = payload
     if (!avatarPic) return errorResponseHandler("Avatar is required", httpStatusCode.BAD_REQUEST, res)
-    const addAvatar = new avatarModel(payload)
+    const newPayload = { ...payload, avatarUrl: avatarPic }
+    const addAvatar = new avatarModel(newPayload)
     await addAvatar.save()
     return { success: true, message: "Avatar added successfully" }
 }
 
 export const getAvatarService = async (res: Response) => {
     const avatars = await avatarModel.find()
-    return { success: true, data: avatars, message: "Avatar fetched successfully" }
+    return { success: true, message: "Avatars fetched successfully", data: avatars }
 }
 
 export const deleteAvatarService = async (id: string, res: Response) => {

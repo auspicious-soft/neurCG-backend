@@ -4,9 +4,7 @@ import { errorParser } from "src/lib/errors/error-response-handler";
 import { deleteAvatarService, getAvatarService, postAvatarService } from "../../services/admin/avatar"
 
 export const postAvatar = async (req: Request, res: Response) => {
-    const avatarPic = req.file
-    console.log('req.files: ', req.files);
-    console.log('avatarPic: ', avatarPic);
+    const avatarPic = req.file?.filename
     const rest = req.body
     const payload = { ...rest, avatarPic }
     try {
