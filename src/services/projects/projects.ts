@@ -14,7 +14,7 @@ export const getUserProjectsService = async (payload: any, res: Response) => {
     // const offset = (pageInt - 1) * limitInt
     const totalDataCount = await projectsModel.countDocuments()
     const results = await projectsModel.find().select("-__v")
-    
+
     const sevenDaysAgo = new Date(new Date().setDate(new Date().getDate() - 7))  // alternate is import { subDays } from 'date-fns'; const sevenDaysAgo = subDays(new Date(), 7);
     // this week results
     const recentProjects = await projectsModel.find({ createdAt: { $gte: sevenDaysAgo } }).select("-__v")
@@ -43,6 +43,12 @@ export const getUserProjectsService = async (payload: any, res: Response) => {
 }
 
 export const convertTextToVideoService = async (payload: any, res: Response) => {
-    const { id, text } = payload
+    const { id, ...rest } = payload
     const user = await usersModel.findById(id)
+    if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
+    
+    return {
+        success: true,
+        message: "Text converted to video successfully"
+    }
 }

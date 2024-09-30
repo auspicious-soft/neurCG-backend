@@ -16,7 +16,7 @@ export const clientEditSchema = z.object({
     dob: z.string().min(1),
     city: z.string().min(1),
     state: z.string().min(1),
-    homeAddress: z.string().min(1), 
+    homeAddress: z.string().min(1),
     profilePic: z.string().min(1),
 }).strict({
     message: "Bad payload present in the data"
@@ -29,4 +29,16 @@ export const passswordResetSchema = z.object({
 }).refine((data) => data.currentPassword !== data.newPassword, {
     path: ["newPassword"],
     message: "New password must be different from the current password"
+})
+
+export const requestTextToVideoSchema = z.object({
+    text: z.string().min(1),
+    projectAvatar: z.string().min(1),
+    textLanguage: z.string().min(1),
+    preferredVoice: z.string().min(1),
+    subtitles: z.boolean(),
+    subtitlesLanguage: z.string().optional(),
+    audio: z.string().min(1).optional()
+}).strict({
+    message: "Bad payload present in the data"
 })

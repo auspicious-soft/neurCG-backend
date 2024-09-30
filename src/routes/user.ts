@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { upload } from "../configF/multer";
 import { checkMulter } from "../lib/errors/error-response-handler"
-import { login, signup,  forgotPassword, verifyOtpPasswordReset, newPassswordAfterOTPVerified, passwordReset, getUserInfo, editUserInfo } from "../controllers/user/user";
+import { login, signup, forgotPassword, verifyOtpPasswordReset, newPassswordAfterOTPVerified, passwordReset, getUserInfo, editUserInfo } from "../controllers/user/user";
 import { getAllNotificationsOfUser, markAllNotificationsAsRead } from "src/controllers/notifications/notifications";
 import { getUserProjects, convertTextToVideo } from "src/controllers/projects/projects";
 
@@ -20,6 +20,6 @@ router.route("/:id").get(getUserInfo).put(upload.single("profilePic"), checkMult
 router.route("/:id/notifications").get(getAllNotificationsOfUser).put(markAllNotificationsAsRead)
 
 router.get("/:id/projects", getUserProjects)
-router.post("/:id/text-to-video", convertTextToVideo)
+router.post("/:id/text-to-video", upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'projectAvatar', maxCount: 1 }]), checkMulter, convertTextToVideo)
 
 export { router }
