@@ -17,6 +17,7 @@ import { checkMulter } from "../lib/errors/error-response-handler"
 import { forgotPassword } from "src/controllers/admin/admin";
 import { verifyOtpPasswordReset } from "src/controllers/user/user";
 import { sendNotificationToUser, sendNotificationToUsers } from "src/controllers/notifications/notifications";
+import { postAvatar, getAvatar, deleteAvatar } from "src/controllers/admin/avatar";
 
 
 
@@ -35,6 +36,9 @@ router.get("/users", getAllUsers)
 router.get("/users/:id", getAUser)
 router.get("/dashboard", getDashboardStats)
 
+router.post("/avatars", upload.single("avatarPic"), checkMulter, postAvatar)
+router.get("/avatars", getAvatar)
+router.delete("/avatars/:id", deleteAvatar)
 
 
 // router.get("/verify-session", verifySession);

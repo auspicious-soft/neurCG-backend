@@ -722,7 +722,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /admin/users/{id}✅:
+  /admin/users/{id}✔️:
     get:
       tags:
         - Admin
