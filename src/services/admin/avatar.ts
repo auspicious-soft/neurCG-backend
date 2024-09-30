@@ -9,7 +9,7 @@ export const postAvatarService = async (payload: any, res: Response) => {
     const newPayload = { ...payload, avatarUrl: avatarPic }
     const addAvatar = new avatarModel(newPayload)
     await addAvatar.save()
-    return { success: true, message: "Avatar added successfully" }
+    return { success: true, message: "Avatar added successfully", data: addAvatar }
 }
 
 export const getAvatarService = async (res: Response) => {

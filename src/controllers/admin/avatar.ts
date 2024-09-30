@@ -9,7 +9,7 @@ export const postAvatar = async (req: Request, res: Response) => {
     const payload = { ...rest, avatarPic }
     try {
         const response = await postAvatarService(payload, res)
-        return res.status(httpStatusCode.OK).json(response)
+        return res.status(httpStatusCode.CREATED).json(response)
     }
     catch (err: any) {
         const { code, message } = errorParser(err)

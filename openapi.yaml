@@ -1109,8 +1109,8 @@ paths:
     post:
       tags:
         - Admin
-      summary: Send notification to a speicific users
-      description: Send notification to a speicific users
+      summary: Send notification to a specific users
+      description: Send notification to a specific users
       requestBody:
         required: true
         content:
@@ -1156,7 +1156,197 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  
+  /admin/avatars:
+    get:
+      tags:
+        - Admin
+      summary: Get the avatars 
+      description: Get the avatars 
+      responses:
+        "200":
+          description: Avatars fetched successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Avatars fetched successfully.
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 5f7b3b3b7f3b3b3b3b3b3b
+                        name:
+                          type: string
+                          example: avatar1
+                        avatarUrl:
+                          type: string
+                          example: https://example.com/image.jpg
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are not authorized to access this resource.
+                  status:
+                    type: boolean
+                    example: false
+        "204":
+          description: No Content 
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+    post:
+      tags:
+        - Admin
+      summary: Add an avatar
+      description: Add an avatar
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatarPic:
+                  type: string
+                  format: binary
+                  description: The avatar image to upload
+                name:
+                  type: string
+                  example: avatar1
+      responses:
+        "201":
+          description: Avatar added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Avatar added successfully.
+                  status:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b
+                      name:
+                        type: string
+                        example: avatar1
+                      avatarUrl:
+                        type: string
+                        example: https://example.com/image.jpg
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are not authorized to access this resource.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string  
+                    example: Internal Server Error
+  /admin/avatars/{id}:
+    delete:
+      tags:
+        - Admin
+      summary: Delete an avatar
+      description: Delete an avatar
+      parameters:
+        - name: id
+          in: path
+          description: The id of the avatar to delete
+          required: true
+          schema:
+            type: string
+            example: 5f7b3b3b7f3b3b3b3b3b3b
+      responses:
+        "200":
+          description: Avatar deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Avatar deleted successfully.
+                  status:
+                    type: boolean
+                    example: true
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: You are not authorized to access this resource.
+                  status:
+                    type: boolean
+                    example: false
+        "404":
+          description: Avatar not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Avatar not found.
+                  status:
+                    type: boolean
+                    example: false
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
   /user/{id}✅:
     get:
       tags:
