@@ -14,7 +14,12 @@ export const contactUsService = async (payload: any, res: Response) => {
 export const getLatestUpdatesService = async (payload: { email: string }, res: Response) => {
     const { email } = payload
     if (!email) return errorResponseHandler("Email is required", httpStatusCode.BAD_REQUEST, res)
+    const alreadySubscribed = await subscribedEmailsModel.findOne({ email })
+    if (alreadySubscribed) return {
+        success: false,
+        message: "You are already subscribed to our latest updates"
+    }
     const addEmail = new subscribedEmailsModel({ email })
-    await addEmail.save() 
+    await addEmail.save()
     return { success: true, message: "You are subscribed to our latest updates" }
 }
