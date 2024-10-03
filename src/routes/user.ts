@@ -4,6 +4,7 @@ import { checkMulter } from "../lib/errors/error-response-handler"
 import { login, signup, forgotPassword, verifyOtpPasswordReset, newPassswordAfterOTPVerified, passwordReset, getUserInfo, editUserInfo } from "../controllers/user/user";
 import { getAllNotificationsOfUser, markAllNotificationsAsRead } from "src/controllers/notifications/notifications";
 import { getUserProjects, convertTextToVideo } from "src/controllers/projects/projects";
+import { buyPlan } from "src/controllers/plans/plans";
 
 const router = Router();
 
@@ -21,5 +22,10 @@ router.route("/:id/notifications").get(getAllNotificationsOfUser).put(markAllNot
 
 router.get("/:id/projects", getUserProjects)
 router.post("/:id/text-to-video", upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'projectAvatar', maxCount: 1 }]), checkMulter, convertTextToVideo)
+
+
+//Payments
+router.post('/:id/buy-plan', buyPlan);
+
 
 export { router }
