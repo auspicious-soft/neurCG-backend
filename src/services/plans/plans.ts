@@ -3,6 +3,7 @@ import { Response } from "express";
 import { usersModel } from "src/models/user/user-schema";
 import { errorResponseHandler } from "src/lib/errors/error-response-handler";
 import { httpStatusCode } from "src/lib/constant";
+import { IncomeModel } from "src/models/admin/income-schema";
 
 interface Payload {
     id: string;
@@ -67,7 +68,16 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any) 
             const creditsToAdd = creditCounts[planType];
             const result = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAdd }, planType }, { new: true });
 
-            return { success: true, message: `User ${userId} has been credited with ${creditsToAdd} credits for plan ${planType}`, result }
+            // Create an income record for this transaction
+            const incomeRecord = new IncomeModel({
+                userId,
+                planType,
+                planAmount: planAmounts[planType],
+                monthYear: new Date().toISOString().slice(0, 7) // Format "YYYY-MM"
+            });
+            await incomeRecord.save()
+
+            return { success: true, message: `User ${userId} has been credited with ${creditsToAdd} credits for plan ${planType}`, data: result }
 
         default:
             console.log(`Unhandled event type ${event.type}`)

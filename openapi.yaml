@@ -1156,7 +1156,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /admin/avatars:
+  /admin/avatars✅:
     get:
       tags:
         - Admin
@@ -1283,7 +1283,7 @@ paths:
                   message:
                     type: string  
                     example: Internal Server Error
-  /admin/avatars/{id}:
+  /admin/avatars/{id}✅:
     delete:
       tags:
         - Admin
@@ -2091,6 +2091,123 @@ paths:
                       subtitlesLanguage:
                         type: string
                         example: fr
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /user/{id}/buy-plan✅:
+    post:
+      tags:
+        - Stripe
+      summary: Buy a plan
+      description: Buy a plan
+      parameters:
+        - name: id
+          in: path
+          description: The id of the user to buy a plan
+          required: true
+          schema:
+            type: string
+            example: 5f7b3b3b7f3b3b3b3b3b3b3b
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                planType:
+                  type: string
+                  example: pro
+      responses:
+        "201":
+          description: Plan bought successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  id: 
+                    type: string
+                    description: session-id-of-stripe-checkout
+                    example: cs_test_a1b2c3o9t43rwheriret8y
+        "500":
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+  /user/webhook✅:
+    post:
+      tags:
+        - Stripe
+      summary: Stripe webhook
+      description: Stripe webhook on checkout complete event to update user credits count
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event:
+                  type: object
+                  properties:
+                    object:
+                      type: string
+                      example: event
+      responses:
+        "200":
+          description: Webhook received successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: User ${userId} has been credited with ${creditsToAdd} credits for plan ${planType}
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b3b
+                      firstName:
+                        type: string
+                        example: john
+                      lastName:
+                        type: string
+                        example: doe
+                      email:
+                        type: string
+                        example: johndoe@gmail.com
+                      subscriptionType:
+                        type: string
+                        example: pro/intro...
+                      date:
+                        type: string
+                        example: 2020-10-02
+                      profilePic:
+                        type: string
+                        example: https://example.com/image.jpg
+                  
         "500":
           description: Internal Server Error
           content:
