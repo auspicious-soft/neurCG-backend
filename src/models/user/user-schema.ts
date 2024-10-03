@@ -30,7 +30,8 @@ const usersSchema = new mongoose.Schema({
     city: { type: String },
     state: { type: String },
     homeAddress: { type: String },
-    creditsLeft: { type: Number, default: 0 },
+    creditsLeft: { type: Number, default: 3 },  
+    planType: { type: String, default: "free" },
     profilePic: { type: String },
     referredBy: {
         type: Schema.ObjectId,

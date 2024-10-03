@@ -4,7 +4,7 @@ import { checkMulter } from "../lib/errors/error-response-handler"
 import { login, signup, forgotPassword, verifyOtpPasswordReset, newPassswordAfterOTPVerified, passwordReset, getUserInfo, editUserInfo } from "../controllers/user/user";
 import { getAllNotificationsOfUser, markAllNotificationsAsRead } from "src/controllers/notifications/notifications";
 import { getUserProjects, convertTextToVideo } from "src/controllers/projects/projects";
-import { buyPlan } from "src/controllers/plans/plans";
+import { buyPlan, updateUserCreditsAfterSuccessPayment } from "src/controllers/plans/plans";
 
 const router = Router();
 
@@ -26,6 +26,6 @@ router.post("/:id/text-to-video", upload.fields([{ name: 'audio', maxCount: 1 },
 
 //Payments
 router.post('/:id/buy-plan', buyPlan);
-
+router.post('/webhook', updateUserCreditsAfterSuccessPayment)
 
 export { router }
