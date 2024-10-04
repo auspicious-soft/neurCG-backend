@@ -78,7 +78,6 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
                 monthYear: new Date().toISOString().slice(0, 7)
             }], { session: transaction });
             
-            console.log('Income record saved successfully');
             await transaction.commitTransaction()
             return { success: true, message: `User ${userId} has been credited with ${creditsToAdd} credits for plan ${planType}`, data: result }
 
