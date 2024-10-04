@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { Request, Response } from "express";
 import { httpStatusCode } from "src/lib/constant";
 import { errorParser } from "src/lib/errors/error-response-handler";
@@ -18,11 +19,16 @@ export const buyPlan = async (req: Request, res: Response) => {
 }
 
 export const updateUserCreditsAfterSuccessPayment = async (req: Request, res: Response) => {
+    const session = await mongoose.startSession()
+    session.startTransaction()
     try {
-        const response = await updateUserCreditsAfterSuccessPaymentService(req.body)
-        return res.status(httpStatusCode.OK).json(response)
+        const response = await updateUserCreditsAfterSuccessPaymentService(req.body, session)
+        return res.status(httpStatusCode.OK).json(response);
     } catch (error) {
-        const { code, message } = errorParser(error)
-        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" })
+        await session.abortTransaction()
+        const { code, message } = errorParser(error);
+        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" });
+    } finally {
+        session.endSession()
     }
-}
+};

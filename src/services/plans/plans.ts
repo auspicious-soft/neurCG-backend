@@ -4,6 +4,7 @@ import { usersModel } from "src/models/user/user-schema";
 import { errorResponseHandler } from "src/lib/errors/error-response-handler";
 import { httpStatusCode } from "src/lib/constant";
 import { IncomeModel } from "src/models/admin/income-schema";
+import mongoose from "mongoose";
 
 interface Payload {
     id: string;
@@ -55,28 +56,29 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
 }
 
 
-export const updateUserCreditsAfterSuccessPaymentService = async (payload: any) => {
+export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, transaction: mongoose.mongo.ClientSession) => {
     const event = payload
     switch (event.type) {
         case 'checkout.session.completed':
             const session = event.data.object;
 
-            // Retrieve the user ID from the session metadata or line items
+            // Retrieve the user ID from the session metadata
             const userId = session.metadata.userId;                                                    // Ensure you're sending this when creating the session
             const planType: 'free' | 'intro' | 'pro' = session.metadata.planType                      // Ensure you're sending this when creating the session
 
             const creditsToAdd = creditCounts[planType];
-            const result = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAdd }, planType }, { new: true });
+            const result = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAdd }, planType }, { new: true, session: transaction  });
 
             // Create an income record for this transaction
-            const incomeRecord = new IncomeModel({
+            await IncomeModel.create([{
                 userId,
                 planType,
-                planAmount: planAmounts[planType],
-                monthYear: new Date().toISOString().slice(0, 7) // Format "YYYY-MM"
-            });
-            await incomeRecord.save()
-
+                planAmount: await getPriceAmountByPriceId(priceIdsMap[planType]),
+                monthYear: new Date().toISOString().slice(0, 7)
+            }], { session: transaction });
+            
+            console.log('Income record saved successfully');
+            await transaction.commitTransaction()
             return { success: true, message: `User ${userId} has been credited with ${creditsToAdd} credits for plan ${planType}`, data: result }
 
         default:
@@ -108,7 +110,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any) 
 // }
 
 
-// export const getPriceAmountByPriceId = async (priceId: string) => {
-//     const price = await stripe.prices.retrieve(priceId)
-//     return price.unit_amount ?? 0
-// }
+export const getPriceAmountByPriceId = async (priceId: string) => {
+    const price = await stripe.prices.retrieve(priceId)
+    return price.unit_amount ?? 0
+}
