@@ -110,14 +110,27 @@ export const getAllUsersService = async (payload: any) => {
 export const getAUserService = async (id: string, res: Response) => {
     const user = await usersModel.findById(id)
     if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
-    const userProjects = await projectsModel.find({ userId: id }).select("-__v")
-    const usedAvatars = userProjects.map((project: any) => project.projectAvatar)
-    const uniqueAvatars = [...new Set(usedAvatars)]
-    const avatarIds = uniqueAvatars.filter(avatar => mongoose.Types.ObjectId.isValid(avatar))
-    const userUploadedPaths = uniqueAvatars.filter(avatar => !mongoose.Types.ObjectId.isValid(avatar))
+    const userProjects = await projectsModel.find({ userId: id }).select("-__v");
+    if (userProjects.length === 0) {
+        return {
+            success: true,
+            message: "User retrieved successfully",
+            data: {
+                user,
+                projects: [],
+                avatarsUsed: []
+            }
+        };
+    }
 
-    const avatarsInfo = await avatarModel.find({ _id: { $in: avatarIds } }).select("-__v avatarUrl")
-    const combinedAvatarsInfo = [...avatarsInfo, ...userUploadedPaths]
+    const usedAvatars = userProjects.map((project: any) => project.projectAvatar);
+    const uniqueAvatars = [...new Set(usedAvatars)];
+    const avatarIds = uniqueAvatars.filter(avatar => mongoose.Types.ObjectId.isValid(avatar));
+    const userUploadedPaths = uniqueAvatars.filter(avatar => !mongoose.Types.ObjectId.isValid(avatar));
+
+    const avatarsInfo = avatarIds.length > 0 ? await avatarModel.find({ _id: { $in: avatarIds } }).select("-__v avatarUrl") : [];
+    const combinedAvatarsInfo = [...avatarsInfo, ...userUploadedPaths];
+
     return {
         success: true,
         message: "User retrieved successfully",
@@ -126,7 +139,7 @@ export const getAUserService = async (id: string, res: Response) => {
             projects: userProjects,
             avatarsUsed: combinedAvatarsInfo
         }
-    }
+    };
 }
 
 export const sendLatestUpdatesService = async (payload: any, res: Response) => {
