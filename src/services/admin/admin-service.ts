@@ -11,6 +11,8 @@ import mongoose from "mongoose";
 import { passwordResetTokenModel } from "src/models/password-token-schema";
 import { usersModel } from "src/models/user/user-schema";
 import { IncomeModel } from "src/models/admin/income-schema";
+import { projectsModel } from "src/models/user/projects-schema";
+import { avatarModel } from "src/models/admin/avatar-schema";
 // import { clientModel } from "../../models/user/user-schema";
 // import { passswordResetSchema, testMongoIdSchema } from "../../validation/admin-user";
 // import { generatePasswordResetToken, getPasswordResetTokenByToken } from "../../lib/send-mail/tokens";
@@ -108,10 +110,22 @@ export const getAllUsersService = async (payload: any) => {
 export const getAUserService = async (id: string, res: Response) => {
     const user = await usersModel.findById(id)
     if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
+    const userProjects = await projectsModel.find({ userId: id }).select("-__v")
+    const usedAvatars = userProjects.map((project: any) => project.projectAvatar)
+    const uniqueAvatars = [...new Set(usedAvatars)]
+    const avatarIds = uniqueAvatars.filter(avatar => mongoose.Types.ObjectId.isValid(avatar))
+    const userUploadedPaths = uniqueAvatars.filter(avatar => !mongoose.Types.ObjectId.isValid(avatar))
+
+    const avatarsInfo = await avatarModel.find({ _id: { $in: avatarIds } }).select("-__v avatarUrl")
+    const combinedAvatarsInfo = [...avatarsInfo, ...userUploadedPaths]
     return {
         success: true,
-        message: "User fetched successfully",
-        data: user
+        message: "User retrieved successfully",
+        data: {
+            user,
+            projects: userProjects,
+            avatarsUsed: combinedAvatarsInfo
+        }
     }
 }
 

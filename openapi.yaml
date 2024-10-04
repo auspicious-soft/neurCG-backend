@@ -722,7 +722,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /admin/users/{id}✔️:
+  /admin/users/{id}✅:
     get:
       tags:
         - Admin
@@ -774,23 +774,27 @@ paths:
                       profilePic:
                         type: string
                         example: https://example.com/image.jpg
+                      creditsLeft:
+                        type: number
+                        example: 10
+                      referredBy:
+                        type: string
+                        example: 5f7b3b3b7f3b3b3b3b3b3b3b
+                      referredCount:
+                        type: number
+                        example: 5
+                      referralBonusPoints:
+                        type: number
+                        example: 10
+                      referralEarnings:
+                        type: number
+                        example: 10
                       avatarsUsed:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            id:
-                              type: string
-                              example: 5f7b3b3b7f3b3b3b3b3b3b3b
-                            name:
-                              type: string
-                              example: avatar1
-                            date:
-                              type: string
-                              example: 2020-10-02
-                            avatarPic:
-                              type: string
-                              example: https://example.com/image.jpg
+                         type: array
+                         items:
+                           type: string
+                           description: The URL of an avatar, which can be either an ID or a user-uploaded path
+                           example: https://example.com/image.jpg
                       projects:
                         type: array
                         items:
@@ -811,21 +815,6 @@ paths:
                             projectAvatar:
                               type: string
                               example: https://example.com/image.jpg
-                      creditsLeft:
-                        type: number
-                        example: 10
-                      referredBy:
-                        type: string
-                        example: 5f7b3b3b7f3b3b3b3b3b3b3b
-                      referredCount:
-                        type: number
-                        example: 5
-                      referralBonusPoints:
-                        type: number
-                        example: 10
-                      referralEarnings:
-                        type: number
-                        example: 10
 
         "404":
           description: User Not Found
