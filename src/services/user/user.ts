@@ -18,7 +18,7 @@ export const signupService = async (payload: any, res: Response) => {
     payload.password = newPassword
     const genId = customAlphabet('1234567890', 8)
     const identifier = customAlphabet('0123456789', 3)
-    payload.myReferralCode = `${process.env.NEXT_PUBLIC_APP_URL}/register?referralCode=${genId()}`
+    payload.myReferralCode = `${process.env.NEXT_PUBLIC_APP_URL}/signup?referralCode=${genId()}`
     payload.identifier = identifier()
     if(payload.referralCode) {
         const referredBy = await usersModel.findOne({ myReferralCode: payload.referralCode })
