@@ -9,6 +9,7 @@ import mongoose from "mongoose"
 import { passwordResetTokenModel } from "../../models/password-token-schema"
 import { customAlphabet } from "nanoid"
 import { increaseReferredCount } from "src/utils"
+import { sendNotificationToUserService } from "../notifications/notifications"
 
 
 export const signupService = async (payload: any, res: Response) => {
@@ -25,6 +26,7 @@ export const signupService = async (payload: any, res: Response) => {
         if (referredBy) {
             payload.referredBy = referredBy._id           //Set my referred by
             await increaseReferredCount(referredBy._id)   //Increase referred count of the person who referred me
+            await sendNotificationToUserService({ title: "Referral", message: "Congrats! A new user has signed up with your referral code", ids: [referredBy._id.toString()] }, res)   //Sending THE NOTIFICATION TO THE USER WHO REFERRED ME
         }
     }
     new usersModel({ ...payload, email: payload.email.toLowerCase().trim() }).save()

@@ -12,7 +12,7 @@ export const sendNotificationToUsersService = async (payload: { title: string, m
     return { success: true, message: "Notification sent successfully to all the users" }
 }
 
-export const sendNotificationToUserService = async (payload: { title: string, message: string, ids: string }, res: Response) => {
+export const sendNotificationToUserService = async (payload: { title: string, message: string, ids: string[] }, res: Response) => {
     const { title, message, ids } = payload
     const users = await usersModel.find({ _id: { $in: ids } })
     if (!users.length) return errorResponseHandler("No users found", httpStatusCode.NO_CONTENT, res)
