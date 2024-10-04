@@ -9,6 +9,7 @@ import {
     newPassswordAfterOTPVerified,
     getAllUsers,
     getAUser,
+    getIncomeData,
     //  updateDashboardStats
 } from "../controllers/admin/admin";
 // import { checkAdminAuth } from "../middleware/check-auth";
@@ -40,6 +41,7 @@ router.post("/avatars", upload.single("avatarPic"), checkMulter, postAvatar)
 router.get("/avatars", getAvatar)
 router.delete("/avatars/:id", deleteAvatar)
 
+router.get("/income", getIncomeData)
 
 // router.get("/verify-session", verifySession);
 // router.patch("/update-password", passwordReset)

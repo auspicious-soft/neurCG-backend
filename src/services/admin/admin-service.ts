@@ -10,6 +10,7 @@ import { generatePasswordResetToken, getPasswordResetTokenByToken } from "src/ut
 import mongoose from "mongoose";
 import { passwordResetTokenModel } from "src/models/password-token-schema";
 import { usersModel } from "src/models/user/user-schema";
+import { IncomeModel } from "src/models/admin/income-schema";
 // import { clientModel } from "../../models/user/user-schema";
 // import { passswordResetSchema, testMongoIdSchema } from "../../validation/admin-user";
 // import { generatePasswordResetToken, getPasswordResetTokenByToken } from "../../lib/send-mail/tokens";
@@ -140,76 +141,28 @@ export const getDashboardStatsService = async (payload: any, res: Response) => {
 }
 
 // Client Services
-// export const getClientsService = async (payload: any) => {
-//     const page = parseInt(payload.page as string) || 1
-//     const limit = parseInt(payload.limit as string) || 10
-//     const offset = (page - 1) * limit
-//     const { query, sort } = queryBuilder(payload, ['firstName', 'lastName'])
-//     const totalDataCount = Object.keys(query).length < 1 ? await clientModel.countDocuments() : await clientModel.countDocuments(query)
-//     const clients = await clientModel.find(query).sort(sort).skip(offset).limit(limit)
-//     if (clients.length) {
-// Fetch clients
-//     const clientAppointments = await appointmentRequestModel.find({
-//         clientId: { $in: clients.map(c => c._id) }
-//     }).sort({ appointmentDate: -1 });
-
-//     // Create a map of client IDs to their appointments
-//     const appointmentMap = clientAppointments.reduce((map: any, appointment: any) => {
-//         if (!map[appointment.clientId.toString()]) {
-//             map[appointment.clientId.toString()] = [];
-//         }
-//         const appointmentObj = appointment.toObject();
-//         delete appointmentObj.clientId;
-//         delete appointmentObj.clientName;
-//         delete appointmentObj.__v
-//         map[appointment.clientId.toString()].push(appointmentObj);
-//         return map
-//     }, {})
-
-//     // Add appointments to each client
-//     const clientsWithAppointments = clients.map(client => {
-//         const clientObject = client.toObject() as any
-//         clientObject.appointments = appointmentMap[client._id.toString()] || [];
-//         return clientObject;
-//     });
-
-//     return {
-//         success: true,
-//         data: clientsWithAppointments,
-//         page,
-//         limit,
-//         total: totalDataCount
-//     };
-// } else {
-//     return {
-//         success: false,
-//         data: [],
-//         page,
-//         limit,
-//         total: 0
-//     };
-// }
-// }
-
-// export const getAClientService = async (id: string, res: Response) => {
-//     const client = await clientModel.findById(id)
-//     if (!client) return errorResponseHandler("Client not found", httpStatusCode.NOT_FOUND, res)
-//     return { success: true, data: client }
-// }
-
-// export const deleteClientService = async (id: string, res: Response) => {
-//     const client = await clientModel.findByIdAndDelete(id)
-//     if (!client) return errorResponseHandler("Client not found", httpStatusCode.NOT_FOUND, res)
-//     return { success: true, message: "Client deleted successfully" }
-// }
-
-// export const updateClientService = async (payload: any, res: Response) => {
-//     const { id, ...rest } = payload
-//     const client = await clientModel.findById(id)
-//     if (!client) return errorResponseHandler("Client not found", httpStatusCode.NOT_FOUND, res)
-//     const updatedClient = await clientModel.findByIdAndUpdate(id, rest, { new: true })
-//     return { success: true, message: "Client status updated successfully", data: updatedClient }
-// }
-
-
+export const getIncomeDataService = async (payload: any) => {
+    const page = parseInt(payload.page as string) || 1
+    const limit = parseInt(payload.limit as string) || 10
+    const offset = (page - 1) * limit
+    const { query, sort } = queryBuilder(payload, ['userName'])
+    const totalDataCount = Object.keys(query).length < 1 ? await IncomeModel.countDocuments() : await IncomeModel.countDocuments(query)
+    const results = await IncomeModel.find(query).sort(sort).skip(offset).limit(limit).select("-__v")
+    if (results.length) return {
+        page,
+        limit,
+        success: true,
+        total: totalDataCount,
+        data: results
+    }
+    else {
+        return {
+            data: [],
+            page,
+            limit,
+            success: true,
+            total: 0
+        }
+    }
+}
 

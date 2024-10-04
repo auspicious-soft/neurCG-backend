@@ -11,7 +11,8 @@ import {
     getDashboardStatsService,
     sendLatestUpdatesService,
     getAllUsersService,
-    getAUserService
+    getAUserService,
+    getIncomeDataService
     // updateDashboardStatsService 
 } from "../../services/admin/admin-service";
 import { errorParser } from "../../lib/errors/error-response-handler";
@@ -153,18 +154,13 @@ export const getDashboardStats = async (req: Request, res: Response) => {
 
 
 
-
-// export const updateDashboardStats = async (req: Request, res: Response) => {
-//     const validation = dashboardSchema.safeParse(req.body)
-//     if (!validation.success) return res.status(httpStatusCode.BAD_REQUEST).json({ success: false, message: formatZodErrors(validation.error) })
-//     try {
-//         const response = await updateDashboardStatsService(req.body, res)
-//         return res.status(httpStatusCode.OK).json(response)
-
-//     } catch (error) {
-//         return res.status(httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: "An error occurred" });
-//     }
-// }
-
-
-
+export const getIncomeData = async (req: Request, res: Response) => {
+    try {
+        const response = await getIncomeDataService(req.query)
+        return res.status(httpStatusCode.OK).json(response)
+    } catch (error: any) {
+        const { code, message } = errorParser(error)
+        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" });
+        
+    }
+}

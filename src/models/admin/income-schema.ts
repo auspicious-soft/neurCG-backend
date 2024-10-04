@@ -15,7 +15,10 @@ const incomeSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    // Optional fields for better reporting
+    userName: {
+        type: String,
+        required: true
+    },
     monthYear: {
         type: String, // Format could be "YYYY-MM" for easier aggregation
         required: true

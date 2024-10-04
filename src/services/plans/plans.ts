@@ -72,6 +72,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             // Create an income record for this transaction
             await IncomeModel.create([{
                 userId,
+                userName: result?.firstName + ' ' + result?.lastName,
                 planType,
                 planAmount: await getPriceAmountByPriceId(priceIdsMap[planType]),
                 monthYear: new Date().toISOString().slice(0, 7)

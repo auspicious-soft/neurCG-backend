@@ -620,7 +620,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /admin/income:
+  /admin/income✅:
     get:
       tags:
         - Admin
@@ -2155,7 +2155,7 @@ paths:
       tags:
         - Stripe
       summary: Stripe webhook
-      description: Stripe webhook on checkout complete event to update user credits count
+      description: Stripe webhook on checkout complete event to update user credits count and admin income data
       requestBody:
         required: true
         content:
