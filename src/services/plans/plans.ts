@@ -2,25 +2,25 @@ import stripe from "src/configF/stripe";
 import { Response } from "express";
 import { usersModel } from "src/models/user/user-schema";
 import { errorResponseHandler } from "src/lib/errors/error-response-handler";
-import { httpStatusCode, priceIdsMap } from "src/lib/constant";
+import { creditCounts, httpStatusCode, priceIdsMap, yearlyCreditCounts, yearlyPriceIdsMap } from "src/lib/constant";
 import { IncomeModel } from "src/models/admin/income-schema";
 import mongoose from "mongoose";
 import Stripe from "stripe";
 
 interface Payload {
     id: string;
-    planType: 'free' | 'intro' | 'pro';
+    planType: 'free' | 'intro' | 'pro'
+    interval?: 'month' | 'year'
 }
 
 // TO create checkout session id to give to frontend
 export const buyPlanService = async (payload: Payload, res: Response) => {
-    const { planType, id } = payload
-    const priceId = priceIdsMap[planType];
+    const { planType, id, interval = 'year' } = payload
+    const priceId = interval == 'month' ? priceIdsMap[planType] : yearlyPriceIdsMap[planType as 'intro' | 'pro']
     if (!priceId) return errorResponseHandler("Invalid plan type", httpStatusCode.BAD_REQUEST, res)
     const metadata = {
         userId: id,
         planType,
-        
     }
     try {
         const session = await stripe.checkout.sessions.create({
@@ -56,16 +56,13 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
         return
     }
     // console.log('✅ Success:', checkSignature.id);
-
     const event = payload.body
     const session = event.data.object;
     const userId = session.metadata.userId;                                                    // Ensure you're sending this when creating the session
     const planType: 'free' | 'intro' | 'pro' = session.metadata.planType                      // Ensure you're sending this when creating the session
     const subs = await stripe.subscriptions.retrieve(session.subscription)
-    const interval = subs?.items?.data[0]?.price?.recurring?.interval
-    console.log('interval: ', interval);
-    if (!interval) return errorResponseHandler("Interval not found", httpStatusCode.BAD_REQUEST, res)
-    const creditsToAdd = session
+    const interval = await (subs as any).plan.interval
+    const creditsToAdd = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
 
     switch (event.type) {
         case 'checkout.session.completed':
@@ -83,7 +80,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
                 // stripeCustomerId: subs.customer,
                 planAmount: await getPriceAmountByPriceId(priceIdsMap[planType]),
                 monthYear: new Date().toISOString().slice(0, 7)
-            }], { session: transaction });
+            }], { session: transaction })
 
             await transaction.commitTransaction()
             return { success: true, message: `User ${userId} has been credited with ${creditsToAdd} credits for plan ${planType}`, data: result }
