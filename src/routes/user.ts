@@ -33,7 +33,7 @@ router.post("/:id/text-to-video", checkAuth, upload.fields([{ name: 'audio', max
 
 //Payments
 router.post('/:id/buy-plan', checkAuth, buyPlan);
-router.post('/webhook', express.raw({ type: 'application/json' }), checkAuth, updateUserCreditsAfterSuccessPayment)
+router.post('/webhook', express.raw({ type: 'application/json' }), updateUserCreditsAfterSuccessPayment)
 router.patch('/:id/cancel-subscription', checkAuth, cancelSubscription)
 
 export { router }
