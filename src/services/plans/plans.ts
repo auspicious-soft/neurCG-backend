@@ -2,7 +2,7 @@ import stripe from "src/configF/stripe";
 import { Response } from "express";
 import { usersModel } from "src/models/user/user-schema";
 import { errorResponseHandler } from "src/lib/errors/error-response-handler";
-import { httpStatusCode } from "src/lib/constant";
+import { httpStatusCode, priceIdsMap } from "src/lib/constant";
 import { IncomeModel } from "src/models/admin/income-schema";
 import mongoose from "mongoose";
 import Stripe from "stripe";
@@ -12,20 +12,6 @@ interface Payload {
     planType: 'free' | 'intro' | 'pro';
 }
 
-const priceIdsMap = {
-    'free': process.env.STRIPE_PRICE_FREE as string,
-    'intro': process.env.STRIPE_PRICE_INTRO as string,
-    'pro': process.env.STRIPE_PRICE_PRO as string
-};
-
-
-const creditCounts = {
-    'free': 24,
-    'intro': 90,
-    'pro': 180
-}
-
-
 // TO create checkout session id to give to frontend
 export const buyPlanService = async (payload: Payload, res: Response) => {
     const { planType, id } = payload
@@ -33,7 +19,8 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
     if (!priceId) return errorResponseHandler("Invalid plan type", httpStatusCode.BAD_REQUEST, res)
     const metadata = {
         userId: id,
-        planType
+        planType,
+        
     }
     try {
         const session = await stripe.checkout.sessions.create({
@@ -43,9 +30,9 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
                 quantity: 1,
             }],
             mode: 'subscription',
-            success_url: `http://localhost:3001`,                                                   // Change to your success URL
-            cancel_url: `http://localhost:3001/plans`,   // Change to your cancel URL
-            metadata
+            success_url: process.env.STRIPE_FRONTEND_SUCCESS_CALLBACK as string,         // Change to your success URL
+            cancel_url: process.env.STRIPE_FRONTEND_CANCEL_CALLBACK as string,   // Change to your cancel URL
+            metadata,
         });
         return {
             id: session.id,
@@ -75,7 +62,10 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     const userId = session.metadata.userId;                                                    // Ensure you're sending this when creating the session
     const planType: 'free' | 'intro' | 'pro' = session.metadata.planType                      // Ensure you're sending this when creating the session
     const subs = await stripe.subscriptions.retrieve(session.subscription)
-    const creditsToAdd = creditCounts[planType]
+    const interval = subs?.items?.data[0]?.price?.recurring?.interval
+    console.log('interval: ', interval);
+    if (!interval) return errorResponseHandler("Interval not found", httpStatusCode.BAD_REQUEST, res)
+    const creditsToAdd = session
 
     switch (event.type) {
         case 'checkout.session.completed':
@@ -122,8 +112,7 @@ export const cancelSubscriptionService = async (payload: any, res: Response<any,
     const { subscriptionId, id } = payload;
     try {
         // Cancel the subscription in Stripe
-        await stripe.subscriptions.cancel(subscriptionId, { cancellation_details: { comment: 'User cancelled his subscription' } })
-        // update(subscriptionId, { cancel_at_period_end: true });
+        await stripe.subscriptions.cancel(subscriptionId, { cancellation_details: { comment: 'User cancelled his subscription' } })   // update(subscriptionId, { cancel_at_period_end: true });
         const result = await usersModel.findByIdAndUpdate(id, { planType: 'expired', planOrSubscriptionId: null }, { new: true })
 
         return { success: true, message: `Subscription ${subscriptionId} has been canceled and user ${id}'s plan is now expired.`, data: result }
