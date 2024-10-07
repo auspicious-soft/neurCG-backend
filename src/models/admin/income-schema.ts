@@ -11,6 +11,12 @@ const incomeSchema = new mongoose.Schema({
         enum: ['free', 'intro', 'pro'],
         required: true
     },
+    planOrSubscriptionId: {
+        type: String,
+    },
+    stripeCustomerId: {
+        type: String,
+    },
     planAmount: {
         type: Number,
         required: true

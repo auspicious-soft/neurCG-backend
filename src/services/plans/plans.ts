@@ -5,6 +5,7 @@ import { errorResponseHandler } from "src/lib/errors/error-response-handler";
 import { httpStatusCode } from "src/lib/constant";
 import { IncomeModel } from "src/models/admin/income-schema";
 import mongoose from "mongoose";
+import Stripe from "stripe";
 
 interface Payload {
     id: string;
@@ -56,30 +57,54 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
 }
 
 
-export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, transaction: mongoose.mongo.ClientSession) => {
-    const event = payload
+export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, transaction: mongoose.mongo.ClientSession, res: Response<any, Record<string, any>>) => {
+    const sig = payload.headers['stripe-signature'];
+    let checkSignature: Stripe.Event;
+    try {
+        checkSignature = stripe.webhooks.constructEvent(payload.rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET as string);
+    } catch (err: any) {
+        console.log(`❌ Error message: ${err.message}`);
+        res.status(400).send(`Webhook Error: ${err.message}`);
+        return
+    }
+    // console.log('✅ Success:', checkSignature.id);
+
+    const event = payload.body
+    const session = event.data.object;
+    const userId = session.metadata.userId;                                                    // Ensure you're sending this when creating the session
+    const planType: 'free' | 'intro' | 'pro' = session.metadata.planType                      // Ensure you're sending this when creating the session
+    const subs = await stripe.subscriptions.retrieve(session.subscription)
+    const creditsToAdd = creditCounts[planType]
+
     switch (event.type) {
         case 'checkout.session.completed':
-            const session = event.data.object;
-
-            // Retrieve the user ID from the session metadata
-            const userId = session.metadata.userId;                                                    // Ensure you're sending this when creating the session
-            const planType: 'free' | 'intro' | 'pro' = session.metadata.planType                      // Ensure you're sending this when creating the session
-
-            const creditsToAdd = creditCounts[planType];
-            const result = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAdd }, planType }, { new: true, session: transaction  });
-
-            // Create an income record for this transaction
+            const result = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAdd }, planType, planOrSubscriptionId: subs.id }, { new: true, session: transaction });
             await IncomeModel.create([{
                 userId,
                 userName: result?.firstName + ' ' + result?.lastName,
                 planType,
+                planOrSubscriptionId: subs.id,
+                // stripeCustomerId: subs.customer,
                 planAmount: await getPriceAmountByPriceId(priceIdsMap[planType]),
                 monthYear: new Date().toISOString().slice(0, 7)
             }], { session: transaction });
-            
+
             await transaction.commitTransaction()
             return { success: true, message: `User ${userId} has been credited with ${creditsToAdd} credits for plan ${planType}`, data: result }
+
+        case 'invoice.paid':
+            const invoiceResult = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAdd }, planType, planOrSubscriptionId: subs.id }, { new: true, session: transaction })
+
+            await IncomeModel.create([{
+                userId,
+                userName: invoiceResult?.firstName + ' ' + invoiceResult?.lastName,
+                planType,
+                planOrSubscriptionId: subs.id,
+                planAmount: await getPriceAmountByPriceId(priceIdsMap[planType]),
+                monthYear: new Date().toISOString().slice(0, 7)
+            }], { session: transaction })
+            await transaction.commitTransaction()
+            return { success: true, message: `User ${userId} has been credited with ${creditsToAdd} credits for plan ${planType}`, data: invoiceResult }
 
         default:
             console.log(`Unhandled event type ${event.type}`)
@@ -87,8 +112,24 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     }
 }
 
+export const cancelSubscriptionService = async (payload: any, res: Response<any, Record<string, any>>) => {
+    const { subscriptionId, id } = payload;
+    try {
+        // Cancel the subscription in Stripe
+        await stripe.subscriptions.cancel(subscriptionId, { cancellation_details: { comment: 'User cancelled his subscription' } })
+        // update(subscriptionId, { cancel_at_period_end: true });
+        const result = await usersModel.findByIdAndUpdate(id, { planType: 'expired', planOrSubscriptionId: null }, { new: true })
+
+        return { success: true, message: `Subscription ${subscriptionId} has been canceled and user ${id}'s plan is now expired.`, data: result }
+
+    }
+    catch (error: any) {
+        return errorResponseHandler(error.message, httpStatusCode.INTERNAL_SERVER_ERROR, res)
+    }
+}
 
 //TO CREATE A PAYMENT INTENT
+
 // export const buyPlanService = async (payload: Payload, res: Response) => {
 //     const { planType, id: userId } = payload;
 

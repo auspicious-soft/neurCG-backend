@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { Request, Response } from "express";
 import { httpStatusCode } from "src/lib/constant";
 import { errorParser } from "src/lib/errors/error-response-handler";
-import { buyPlanService, updateUserCreditsAfterSuccessPaymentService } from "src/services/plans/plans";
+import { buyPlanService, cancelSubscriptionService, updateUserCreditsAfterSuccessPaymentService } from "src/services/plans/plans";
 import { formatZodErrors } from "src/validation/format-zod-errors";
 import { buyPlanSchema } from "src/validation/payment";
 
@@ -22,7 +22,7 @@ export const updateUserCreditsAfterSuccessPayment = async (req: Request, res: Re
     const session = await mongoose.startSession()
     session.startTransaction()
     try {
-        const response = await updateUserCreditsAfterSuccessPaymentService(req.body, session)
+        const response = await updateUserCreditsAfterSuccessPaymentService(req, session, res)
         return res.status(httpStatusCode.OK).json(response);
     } catch (error) {
         await session.abortTransaction()
@@ -31,4 +31,14 @@ export const updateUserCreditsAfterSuccessPayment = async (req: Request, res: Re
     } finally {
         session.endSession()
     }
-};
+}
+
+export const cancelSubscription = async (req: Request, res: Response) => {
+    try {
+        const response = await cancelSubscriptionService({ id: req.params.id, ...req.body }, res)
+        return res.status(httpStatusCode.OK).json(response);
+    } catch (error) {
+        const { code, message } = errorParser(error);
+        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" });
+    }
+}

@@ -1,20 +1,25 @@
-import express from "express";
-import cors from "cors";
+import express from "express"
+import cors from "cors"
 // import cookieParser from "cookie-parser";
-import path from "path";
-import { fileURLToPath } from 'url'; 
-import connectDB from "./configF/db";
-import { admin, user, landing } from "./routes";
-import { checkValidAdminRole } from "./utils";
+import path from "path"
+import { fileURLToPath } from 'url'
+import connectDB from "./configF/db"
+import { admin, user, landing } from "./routes"
+import { checkValidAdminRole } from "./utils"
+import bodyParser from 'body-parser'
 
 // Create __dirname equivalent for ES modules
-const __filename = fileURLToPath(import.meta.url); // <-- Define __filename
-const __dirname = path.dirname(__filename);        // <-- Define __dirname
+const __filename = fileURLToPath(import.meta.url) // <-- Define __filename
+const __dirname = path.dirname(__filename)        // <-- Define __dirname
 
-const PORT = process.env.PORT || 8000;
-const app = express();
-app.set("trust proxy", true);
-
+const PORT = process.env.PORT || 8000
+const app = express()
+app.set("trust proxy", true)
+app.use(bodyParser.json({
+    verify: (req: any, res, buf) => {
+      req.rawBody = buf.toString();
+    }
+  }));
 // app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -27,11 +32,11 @@ app.use(
 );
 
 
-var dir = path.join(__dirname, 'static');
-app.use(express.static(dir));
+var dir = path.join(__dirname, 'static')
+app.use(express.static(dir))
 
-var uploadsDir = path.join(__dirname, 'uploads');
-app.use('/uploads', express.static(uploadsDir));
+var uploadsDir = path.join(__dirname, 'uploads')
+app.use('/uploads', express.static(uploadsDir))
 
 
 connectDB();
