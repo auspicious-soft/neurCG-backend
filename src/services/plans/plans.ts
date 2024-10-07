@@ -15,7 +15,7 @@ interface Payload {
 
 // TO create checkout session id to give to frontend
 export const buyPlanService = async (payload: Payload, res: Response) => {
-    const { planType, id, interval = 'year' } = payload
+    const { planType, id, interval = 'month' } = payload
     const priceId = interval == 'month' ? priceIdsMap[planType] : yearlyPriceIdsMap[planType as 'intro' | 'pro']
     if (!priceId) return errorResponseHandler("Invalid plan type", httpStatusCode.BAD_REQUEST, res)
     const metadata = {
@@ -37,7 +37,7 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
                 price_data: {
                     currency: 'eur',
                     product_data: {
-                        name: planType,
+                        name: planType[0].toUpperCase() + planType.slice(1) + ' Plan',
                         ...(interval === 'year' && { description: '5% discount applied' })
                     },
                     unit_amount: unitAmount,
