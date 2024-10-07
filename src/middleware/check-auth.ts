@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { httpStatusCode } from "src/lib/constant";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { configDotenv } from "dotenv";
-
+import { decode } from 'next-auth/jwt'
 configDotenv()
 declare global {
     namespace Express {
@@ -12,20 +12,16 @@ declare global {
     }
 }
 
-export const checkAuth = (req: Request, res: Response, next: NextFunction) => {
+export const checkAuth = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const token = req.headers.authorization?.split(" ")[1]
-        console.log('token: ', token);
-        if (!token) return res.status(httpStatusCode.UNAUTHORIZED).json({ success: false, message: "Unauthorized" })
-        jwt.verify(token, process.env.JWT_SECRET as string, (err, decoded) => {
-            if (err) {
-                console.log('Token verification error: ', err)
-                return res.status(httpStatusCode.UNAUTHORIZED).json({ success: false, message: "Unauthorized" });
-            }
-
-            req.user = decoded
-            next()
-        });
+        if (!token) return res.status(httpStatusCode.UNAUTHORIZED).json({ success: false, message: "Unauthorized token missing" })
+        const decoded = await decode({
+            secret: process.env.AUTH_SECRET as string,
+            token,
+            salt: process.env.JWT_SALT as string
+        })
+        if (!decoded) return res.status(httpStatusCode.UNAUTHORIZED).json({ success: false, message: "Unauthorized token invalid or expired" })
         next()
     } catch (error) {
         console.log('error: ', error);

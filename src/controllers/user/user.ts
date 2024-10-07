@@ -7,27 +7,6 @@ import { loginService, signupService, forgotPasswordService, newPassswordAfterOT
 import { z } from "zod"
 import mongoose from "mongoose"
 import { adminUserLoginSchema } from "src/validation/admin-user"
-import jwt from "jsonwebtoken";
-
-export const verifySession = async (req: Request, res: Response) => {
-    try {
-        const token = req.headers.authorization?.split(" ")[1];
-        console.log('token: ', token);
-        if (!token) {
-            return res.status(httpStatusCode.UNAUTHORIZED).json({ success: false, message: "Unauthorized" });
-        }
-
-        jwt.verify(token, process.env.JWT_SECRET!, (err: any, decoded: any) => {
-            if (err) {
-                return res.status(httpStatusCode.UNAUTHORIZED).json({ success: false, message: "Unauthorized" });
-            }
-            res.status(httpStatusCode.OK).json({ success: true, data: decoded });
-        })
-    } catch (error) {
-        console.log(error);
-        res.status(httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: "Something went wrong" });
-    }
-}
 
 export const signup = async (req: Request, res: Response) => {
     const validation = clientSignupSchema.safeParse(req.body)
