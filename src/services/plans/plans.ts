@@ -23,11 +23,28 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
         planType,
     }
     try {
+        const originalAmount = await getPriceAmountByPriceId(priceId)
+        let unitAmount = originalAmount
+        if (interval === 'year') {
+            const discount = (originalAmount * 0.05)
+            unitAmount = originalAmount - discount
+        }
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             line_items: [{
-                price: priceId,
+                // price: priceId,  either this or the below price_data
                 quantity: 1,
+                price_data: {
+                    currency: 'eur',
+                    product_data: {
+                        name: planType,
+                        ...(interval === 'year' && { description: '5% discount applied' })
+                    },
+                    unit_amount: unitAmount,
+                    recurring: {
+                        interval
+                    }
+                }
             }],
             mode: 'subscription',
             success_url: process.env.STRIPE_FRONTEND_SUCCESS_CALLBACK as string,         // Change to your success URL
@@ -63,10 +80,10 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     const subs = await stripe.subscriptions.retrieve(session.subscription)
     const interval = await (subs as any).plan.interval
     const creditsToAdd = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
-
+    const planAmount = interval === 'month' ? await getPriceAmountByPriceId(priceIdsMap[planType]) : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType as 'intro' | 'pro']) * 0.95;
     switch (event.type) {
         case 'checkout.session.completed':
-            const user = await usersModel.findById(userId);
+            const user = await usersModel.findById(userId)
             const currentSubscriptionId = user?.planOrSubscriptionId
             if (currentSubscriptionId && currentSubscriptionId !== session.subscription) {
                 await stripe.subscriptions.cancel(currentSubscriptionId)
@@ -78,7 +95,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
                 planType,
                 planOrSubscriptionId: subs.id,
                 // stripeCustomerId: subs.customer,
-                planAmount: await getPriceAmountByPriceId(priceIdsMap[planType]),
+                planAmount,
                 monthYear: new Date().toISOString().slice(0, 7)
             }], { session: transaction })
 
@@ -93,7 +110,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
                 userName: invoiceResult?.firstName + ' ' + invoiceResult?.lastName,
                 planType,
                 planOrSubscriptionId: subs.id,
-                planAmount: await getPriceAmountByPriceId(priceIdsMap[planType]),
+                planAmount,
                 monthYear: new Date().toISOString().slice(0, 7)
             }], { session: transaction })
             await transaction.commitTransaction()
