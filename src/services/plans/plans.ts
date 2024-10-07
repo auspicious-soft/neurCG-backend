@@ -20,10 +20,11 @@ const priceIdsMap = {
 
 
 const creditCounts = {
-    'free': 3,
-    'intro': 100,
-    'pro': 300
+    'free': 24,
+    'intro': 90,
+    'pro': 180
 }
+
 
 // TO create checkout session id to give to frontend
 export const buyPlanService = async (payload: Payload, res: Response) => {
