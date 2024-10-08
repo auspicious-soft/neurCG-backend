@@ -19,6 +19,7 @@ import { forgotPassword } from "src/controllers/admin/admin";
 import { verifyOtpPasswordReset } from "src/controllers/user/user";
 import { sendNotificationToUser, sendNotificationToUsers } from "src/controllers/notifications/notifications";
 import { postAvatar, getAvatar, deleteAvatar } from "src/controllers/admin/avatar";
+import { checkAuth } from "src/middleware/check-auth";
 
 
 
@@ -30,18 +31,18 @@ router.post("/verify-otp", verifyOtpPasswordReset)
 router.patch("/new-password-otp-verified", newPassswordAfterOTPVerified)
 
 
-router.post("/send-latest-updates", sendLatestUpdates)
-router.post("/send-notification", sendNotificationToUsers)
-router.post("/send-notification-to-specific-users", sendNotificationToUser)
-router.get("/users", getAllUsers)
-router.get("/users/:id", getAUser)
-router.get("/dashboard", getDashboardStats)
+router.post("/send-latest-updates", checkAuth, sendLatestUpdates)
+router.post("/send-notification", checkAuth, sendNotificationToUsers)
+router.post("/send-notification-to-specific-users", checkAuth, sendNotificationToUser)
+router.get("/users", checkAuth, getAllUsers)
+router.get("/users/:id", checkAuth, getAUser)
+router.get("/dashboard", checkAuth, getDashboardStats)
 
-router.post("/avatars", upload.single("avatarPic"), checkMulter, postAvatar)
-router.get("/avatars", getAvatar)
-router.delete("/avatars/:id", deleteAvatar)
+router.post("/avatars", upload.single("avatarPic"), checkMulter, checkAuth, postAvatar)
+router.get("/avatars", checkAuth, getAvatar)
+router.delete("/avatars/:id", checkAuth, deleteAvatar)
 
-router.get("/income", getIncomeData)
+router.get("/income", checkAuth, getIncomeData)
 
 // router.get("/verify-session", verifySession);
 // router.patch("/update-password", passwordReset)
