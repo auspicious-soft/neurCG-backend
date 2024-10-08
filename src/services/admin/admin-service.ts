@@ -1,6 +1,6 @@
 import { adminModel } from "../../models/admin/admin-schema";
 import bcrypt from "bcryptjs";
-import { Request, Response } from "express";
+import { Response } from "express";
 import { errorResponseHandler } from "../../lib/errors/error-response-handler";
 import { httpStatusCode } from "../../lib/constant";
 import { queryBuilder } from "../../utils";
@@ -18,7 +18,6 @@ import { avatarModel } from "src/models/admin/avatar-schema";
 // import { generatePasswordResetToken, getPasswordResetTokenByToken } from "../../lib/send-mail/tokens";
 // import { sendPasswordResetEmail } from "../../lib/send-mail/mail";
 // import { passwordResetTokenModel } from "../../models/password-forgot-schema";
-
 
 
 interface loginInterface {
@@ -160,11 +159,100 @@ export const sendLatestUpdatesService = async (payload: any, res: Response) => {
         message: "Latest updates sent successfully"
     }
 }
+
 // Dashboard
 export const getDashboardStatsService = async (payload: any, res: Response) => {
+    //Income data
+    const last12Months = Array.from({ length: 12 }, (_, i) => {
+        const date = new Date()
+        date.setMonth(date.getMonth() - i)
+        return date.toISOString().slice(0, 7) // Format "YYYY-MM"
+    }).reverse()
 
-    return { success: true, message: "Dashboard stats fetched successfully" }
+    const incomeData = await IncomeModel.aggregate([
+        {
+            $match: {
+                monthYear: { $in: last12Months }
+            }
+        },
+        {
+            $group: {
+                _id: "$monthYear",
+                totalIncome: { $sum: "$planAmount" }
+            }
+        },
+        {
+            $sort: { _id: 1 }
+        }
+    ])
 
+    const incomeMap = new Map(last12Months.map(month => [month, 0]))
+    incomeData.forEach(item => {
+        incomeMap.set(item._id, item.totalIncome)
+    })
+
+    const formattedIncomeData = Array.from(incomeMap, ([month, totalIncome]) => ({
+        month,
+        totalIncome
+    }))
+
+    const incomeThisMonth = formattedIncomeData[formattedIncomeData.length - 1]?.totalIncome || 0;
+
+    //Users growth data
+    const sevenDaysAgo = new Date(new Date().setDate(new Date().getDate() - 7))
+    const totalUsers = await usersModel.countDocuments()
+    const proUsers = await usersModel.countDocuments({ planType: "pro" })
+    const normalUsers = await usersModel.countDocuments({ planType: "free" })
+    const newUsersData = await usersModel.find({ createdAt: { $gte: sevenDaysAgo } }).select("-__v")
+    const userData = await usersModel.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 1, new Date().getMonth(), 1)),
+              $lte: new Date(new Date().setHours(23, 59, 59, 999))
+            }
+          }
+        },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+            userCount: { $sum: 1 }
+          }
+        },
+        {
+          $sort: { _id: -1 }
+        }
+      ]);   
+    const userMap = new Map(last12Months.map(month => [month, 0]));
+    userData.forEach(item => {
+        userMap.set(item._id, item.userCount);
+    })
+    const formattedUserData = Array.from(userMap, ([month, userCount]) => ({
+        month,
+        userCount
+    }))
+    const response = {
+        success: true,
+        message: "Dashboard stats fetched successfully",
+        data: {
+            incomeThisMonth,
+            incomeData: {
+                months: formattedIncomeData.map(item => item.month),
+                income: formattedIncomeData.map(item => item.totalIncome)
+            },  
+            usersGrowth: {
+                months: formattedUserData.map(item => item.month),
+                count: formattedUserData.map(item => item.userCount)
+            },
+            totalUsers,
+            proUsers,
+            normalUsers,
+            newUsers: newUsersData.length,
+            newUsersData
+        }
+    }
+
+    return response
 }
 
 // Client Services

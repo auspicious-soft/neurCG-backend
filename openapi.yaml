@@ -853,7 +853,7 @@ paths:
     get:
       tags:
         - Admin
-      summary: Get the dashboard data for the admin.
+      summary: Get the dashboard data for the admin and income data and user data graph is of last 12 months.
       description: Get the dashboard data of the admin.
       responses:
         "200":

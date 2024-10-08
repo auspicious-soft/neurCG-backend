@@ -46,6 +46,6 @@ const usersSchema = new mongoose.Schema({
     referredCount: { type: Number, default: 0 },
     referralBonusPoints: { type: Number, default: 0 },
     referralEarnings: { type: Number, default: 0 }
-})
+}, { timestamps: true })
 
 export const usersModel = mongoose.model("users", usersSchema)
