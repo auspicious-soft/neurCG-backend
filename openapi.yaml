@@ -849,7 +849,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /admin/dashboard:
+  /admin/dashboard✅:
     get:
       tags:
         - Admin
