@@ -19,11 +19,7 @@ router.patch("/new-password-otp-verified", newPassswordAfterOTPVerified)
 router.patch("/update-password/:id", passwordReset)
 
 
-router.route("/:id").get(
-    checkAuth,
-    getUserInfo).put(
-        // checkAuth, 
-        upload.single("profilePic"), checkMulter, editUserInfo)
+router.route("/:id").get(checkAuth, getUserInfo).put(checkAuth, upload.single("profilePic"), checkMulter, editUserInfo)
 
 router.route("/:id/notifications").get(checkAuth, getAllNotificationsOfUser).put(checkAuth, markAllNotificationsAsRead)
 
