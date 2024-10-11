@@ -27,6 +27,9 @@ const usersSchema = new mongoose.Schema({
     dob: {
         type: Date
     },
+    phoneNumber: {
+        type: String,
+    },
     city: { type: String },
     state: { type: String },
     homeAddress: { type: String },
