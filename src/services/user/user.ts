@@ -22,7 +22,7 @@ export const signupService = async (payload: any, res: Response) => {
     payload.myReferralCode = `${process.env.NEXT_PUBLIC_APP_URL}/signup?referralCode=${genId()}`
     payload.identifier = identifier()
     if(payload.referralCode) {
-        const referredBy = await usersModel.findOne({ myReferralCode: payload.referralCode })
+        const referredBy = await usersModel.findOne({ myReferralCode: `${process.env.NEXT_PUBLIC_APP_URL}/signup?referralCode=${payload.referralCode}` })
         if (referredBy) {
             payload.referredBy = referredBy._id           //Set my referred by
             await increaseReferredCount(referredBy._id)   //Increase referred count of the person who referred me
