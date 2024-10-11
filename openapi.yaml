@@ -7,7 +7,7 @@ servers:
   - url: NODE_BACKEND_URL/api
 
 paths:
-  /landing/contact-us✅:
+  /landing/contact-us✅☑️:
     post:
       tags:
         - Contact Us
@@ -56,7 +56,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /landing/latest-updates✅:
+  /landing/latest-updates✅☑️:
     post:
       tags:
         - Contact Us
@@ -96,7 +96,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /admin/login✅:
+  /admin/login✅☑️:
     post:
       tags:
         - Authentication
@@ -184,7 +184,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /user/login✅:
+  /user/login✅☑️:
     post:
       tags:
         - Authentication
@@ -518,7 +518,7 @@ paths:
                     type: string
                     example: Internal Server Error
 
-  /admin/users✅:
+  /admin/users✅☑️:
     get:
       tags:
         - Admin
@@ -617,7 +617,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /admin/income✅:
+  /admin/income✅☑️:
     get:
       tags:
         - Admin
@@ -719,7 +719,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /admin/users/{id}✅:
+  /admin/users/{id}✅✔️:
     get:
       tags:
         - Admin
@@ -849,7 +849,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /admin/dashboard✅:
+  /admin/dashboard✅✔️:
     get:
       tags:
         - Admin
@@ -1577,7 +1577,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /user/{id}/notifications✅:
+  /user/{id}/notifications✅☑️:
     get:
       tags:
         - User
@@ -2086,7 +2086,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /user/{id}/buy-plan✅:
+  /user/{id}/buy-plan✅☑️:
     post:
       tags:
         - Stripe
@@ -2138,7 +2138,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /user/webhook✅:
+  /user/webhook✅☑️:
     post:
       tags:
         - Stripe
