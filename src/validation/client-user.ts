@@ -18,6 +18,7 @@ export const clientEditSchema = z.object({
     state: z.string().min(1),
     homeAddress: z.string().min(1),
     profilePic: z.string().min(1),
+    phoneNumber: z.string().min(1)
 }).strict({
     message: "Bad payload present in the data"
 }).partial()
