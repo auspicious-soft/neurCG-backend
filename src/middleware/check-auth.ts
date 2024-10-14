@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { httpStatusCode } from "src/lib/constant";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import { JwtPayload } from "jsonwebtoken";
 import { configDotenv } from "dotenv";
 import { decode } from 'next-auth/jwt'
 configDotenv()
