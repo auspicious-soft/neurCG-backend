@@ -37,6 +37,7 @@ const usersSchema = new mongoose.Schema({
     planType: { type: String, default: "free" },
     stripeCustomerId: { type: String },
     planOrSubscriptionId: { type: String, default: null },
+    planInterval: { type: String },
     profilePic: { type: String },
     referredBy: {
         type: Schema.ObjectId,

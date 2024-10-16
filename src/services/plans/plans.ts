@@ -50,6 +50,12 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
             success_url: process.env.STRIPE_FRONTEND_SUCCESS_CALLBACK as string,         // Change to your success URL
             cancel_url: process.env.STRIPE_FRONTEND_CANCEL_CALLBACK as string,   // Change to your cancel URL
             metadata,
+            subscription_data: {   //Very imp to remember the subs. to be remembered for later invoicing
+                metadata: {
+                    userId: id,
+                    planType
+                }
+            }
         });
         return {
             id: session.id,
@@ -75,27 +81,30 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     // console.log('✅ Success:', checkSignature.id);
     const event = payload.body
     const session = event.data.object;
-    const userId = session.metadata.userId;                                                    // Ensure you're sending this when creating the session
-    const planType: 'free' | 'intro' | 'pro' = session.metadata.planType                      // Ensure you're sending this when creating the session
+    let userId                                    // Ensure you're sending this when creating the session
+    let planType: 'free' | 'intro' | 'pro'                // Ensure you're sending this when creating the session
     const subs = await stripe.subscriptions.retrieve(session.subscription)
     const interval = await (subs as any).plan.interval
-    const creditsToAdd = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
-    const planAmount = interval === 'month' ? await getPriceAmountByPriceId(priceIdsMap[planType]) : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType as 'intro' | 'pro']) * 0.95;
     switch (event.type) {
         case 'checkout.session.completed':
+            userId = session.metadata.userId
+            planType = session.metadata.planType
             const user = await usersModel.findById(userId)
+            const planAmount = interval === 'month' ? await getPriceAmountByPriceId(priceIdsMap[planType]) : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType as 'intro' | 'pro']) * 0.95;
+            const creditsToAdd = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
             const currentSubscriptionId = user?.planOrSubscriptionId
             if (currentSubscriptionId && currentSubscriptionId !== session.subscription) {
                 await stripe.subscriptions.cancel(currentSubscriptionId)
             }
-            const result = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAdd }, planType, planOrSubscriptionId: subs.id }, { new: true, session: transaction });
+            const result = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAdd }, planType, planOrSubscriptionId: session.subscription, planInterval:interval }, { new: true, session: transaction });
             await IncomeModel.create([{
                 userId,
                 userName: result?.firstName + ' ' + result?.lastName,
                 planType,
-                planOrSubscriptionId: subs.id,
+                planOrSubscriptionId: session.subscription,
                 // stripeCustomerId: subs.customer,
                 planAmount,
+                planInterval: interval,
                 monthYear: new Date().toISOString().slice(0, 7)
             }], { session: transaction })
 
@@ -103,18 +112,23 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             return { success: true, message: `User ${userId} has been credited with ${creditsToAdd} credits for plan ${planType}`, data: result }
 
         case 'invoice.paid':
-            const invoiceResult = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAdd }, planType, planOrSubscriptionId: subs.id }, { new: true, session: transaction })
+            userId = subs.metadata.userId
+            planType = subs.metadata.planType as 'free' | 'intro' | 'pro'
+            const planAmountInvoice = interval === 'month' ? await getPriceAmountByPriceId(priceIdsMap[planType]) : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType as 'intro' | 'pro']) * 0.95;
+            const creditsToAddInvoice = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
+            const invoiceResult = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAddInvoice }, planType, planOrSubscriptionId: session.subscription, planInterval: interval }, { new: true, session: transaction })
 
             await IncomeModel.create([{
                 userId,
                 userName: invoiceResult?.firstName + ' ' + invoiceResult?.lastName,
                 planType,
-                planOrSubscriptionId: subs.id,
-                planAmount,
-                monthYear: new Date().toISOString().slice(0, 7)
+                planOrSubscriptionId: session.subscription,
+                planAmountInvoice,
+                monthYear: new Date().toISOString().slice(0, 7),
+                planInterval: interval
             }], { session: transaction })
             await transaction.commitTransaction()
-            return { success: true, message: `User ${userId} has been credited with ${creditsToAdd} credits for plan ${planType}`, data: invoiceResult }
+            return { success: true, message: `User ${userId} has been credited with ${creditsToAddInvoice} credits for plan ${planType}`, data: invoiceResult }
 
         default:
             console.log(`Unhandled event type ${event.type}`)
