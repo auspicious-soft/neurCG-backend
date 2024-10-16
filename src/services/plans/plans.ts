@@ -6,6 +6,7 @@ import { creditCounts, httpStatusCode, priceIdsMap, yearlyCreditCounts, yearlyPr
 import { IncomeModel } from "src/models/admin/income-schema";
 import mongoose from "mongoose";
 import Stripe from "stripe";
+import { notificationsModel } from "src/models/admin/notification-schema";
 
 interface Payload {
     id: string;
@@ -96,7 +97,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             if (currentSubscriptionId && currentSubscriptionId !== session.subscription) {
                 await stripe.subscriptions.cancel(currentSubscriptionId)
             }
-            const result = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAdd }, planType, planOrSubscriptionId: session.subscription, planInterval:interval }, { new: true, session: transaction });
+            const result = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAdd }, planType, planOrSubscriptionId: session.subscription, planInterval: interval }, { new: true, session: transaction });
             await IncomeModel.create([{
                 userId,
                 userName: result?.firstName + ' ' + result?.lastName,
@@ -129,6 +130,19 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             }], { session: transaction })
             await transaction.commitTransaction()
             return { success: true, message: `User ${userId} has been credited with ${creditsToAddInvoice} credits for plan ${planType}`, data: invoiceResult }
+
+        case 'invoice.payment_failed':
+            //SEND NOTIFICATION TO USER
+            const userIdInvoiceFailed = subs.metadata.userId
+            const planTypeInvoiceFailed = subs.metadata.planType as 'free' | 'intro' | 'pro'
+            const sendNotification = await notificationsModel.create({
+                userId: userIdInvoiceFailed,
+                title: 'Payment Failed for your plan',
+                message: `Your payment for ${planTypeInvoiceFailed} plan has failed. Please contact support.`,
+                date: new Date()
+            })
+            console.log(`Payment failed notification sent to user ${userIdInvoiceFailed} for plan ${planTypeInvoiceFailed}.`)
+            return { success: false, message: `Payment for ${planTypeInvoiceFailed} plan has failed.`, data: sendNotification }
 
         default:
             console.log(`Unhandled event type ${event.type}`)
