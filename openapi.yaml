@@ -1843,8 +1843,8 @@ paths:
                   example: en
                 audio:
                   type: string
-                  format: binary
                   description: The audio file to upload
+                  example: male-david-gotham male-jacob-hardy female-sanya-jean female-marya-jean
               required:
                 - text
                 - projectAvatar

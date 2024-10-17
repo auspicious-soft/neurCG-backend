@@ -114,7 +114,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
 
         case 'invoice.paid':
             userId = subs.metadata.userId
-            planType = subs.metadata.planType as 'free' | 'intro' | 'pro'
+            planType = subs.metadata.planType as 'intro' | 'pro'
             const planAmountInvoice = interval === 'month' ? await getPriceAmountByPriceId(priceIdsMap[planType]) : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType as 'intro' | 'pro']) * 0.95;
             const creditsToAddInvoice = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
             const invoiceResult = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAddInvoice }, planType, planOrSubscriptionId: session.subscription, planInterval: interval }, { new: true, session: transaction })

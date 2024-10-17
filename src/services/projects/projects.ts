@@ -53,45 +53,55 @@ export const getUserProjectsService = async (payload: any, res: Response) => {
 
 export const convertTextToVideoService = async (payload: any, res: Response) => {
     const { id, ...rest } = payload
-    const dataToSend = rest.payload
     const user = await usersModel.findById(id)
     if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
-    const formData = new FormData();
-    formData.append('data', JSON.stringify(dataToSend))
 
-    const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string
-    // const response = await axios.post(flaskUrl)
-    const srcDir = path.join(__dirname, '..', '..')
-    if (dataToSend.audio) {
-        const audioPath = path.join(srcDir, dataToSend.audio);
-        const audioContent = fs.readFileSync(audioPath);
-        formData.append('audio', audioContent, dataToSend.audio);
+    return {
+        success: true,
+        message: "Text converted to video successfully"
     }
-    const projectAvatarPath = path.join(srcDir, dataToSend.projectAvatar);
-    const projectAvatarContent = fs.readFileSync(projectAvatarPath);
-    formData.append('projectAvatar', projectAvatarContent, { filename: path.basename(projectAvatarPath) })
-    try {
-        const response = await axios.get(flaskUrl,
-            //  formData, {
-            // headers: formData.getHeaders()
 
-        // }
-    );
-        console.log('response: ', response.data);
-        if (dataToSend.audio) {
-            const audioPath = path.join(srcDir, dataToSend.audio);
-            deleteFile(audioPath);
-        }
-        if (dataToSend.projectAvatar) {
-            const projectAvatarPath = path.join(srcDir, dataToSend.projectAvatar);
-            deleteFile(projectAvatarPath);
-        }
-        return {
-            success: true,
-            message: "Text converted to video successfully"
-        }
-    } catch (error) {
-        console.error('Error during API call:', error);
-        return errorResponseHandler("An error occurred during the API call", httpStatusCode.INTERNAL_SERVER_ERROR, res);
-    }
 }
+// export const convertTextToVideoService = async (payload: any, res: Response) => {
+//     const { id, ...rest } = payload
+//     const dataToSend = rest.payload
+//     const user = await usersModel.findById(id)
+//     if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
+//     const formData = new FormData();
+//     formData.append('data', JSON.stringify(dataToSend))
+
+//     const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string
+//     // const response = await axios.post(flaskUrl)
+//     const srcDir = path.join(__dirname, '..', '..')
+//     if (dataToSend.audio) {
+//         const audioPath = path.join(srcDir, dataToSend.audio);
+//         const audioContent = fs.readFileSync(audioPath);
+//         formData.append('audio', audioContent, dataToSend.audio);
+//     }
+//     const projectAvatarPath = path.join(srcDir, dataToSend.projectAvatar);
+//     const projectAvatarContent = fs.readFileSync(projectAvatarPath);
+//     formData.append('projectAvatar', projectAvatarContent, { filename: path.basename(projectAvatarPath) })
+//     try {
+//         const response = await axios.get(flaskUrl,
+//             //  formData, {
+//             // headers: formData.getHeaders()
+
+//         // }
+//     );
+//         if (dataToSend.audio) {
+//             const audioPath = path.join(srcDir, dataToSend.audio);
+//             deleteFile(audioPath);
+//         }
+//         if (dataToSend.projectAvatar) {
+//             const projectAvatarPath = path.join(srcDir, dataToSend.projectAvatar);
+//             deleteFile(projectAvatarPath);
+//         }
+//         return {
+//             success: true,
+//             message: "Text converted to video successfully"
+//         }
+//     } catch (error) {
+//         console.error('Error during API call:', error);
+//         return errorResponseHandler("An error occurred during the API call", httpStatusCode.INTERNAL_SERVER_ERROR, res);
+//     }
+// }

@@ -24,7 +24,9 @@ router.route("/:id").get(checkAuth, getUserInfo).put(checkAuth, upload.single("p
 router.route("/:id/notifications").get(checkAuth, getAllNotificationsOfUser).put(checkAuth, markAllNotificationsAsRead)
 
 router.get("/:id/projects", checkAuth, getUserProjects)
-router.post("/:id/text-to-video", checkAuth, upload.fields([{ name: 'audio', maxCount: 1 }, { name: 'projectAvatar', maxCount: 1 }]), checkMulter, convertTextToVideo)
+router.post("/:id/text-to-video", checkAuth,
+    // upload.fields([{ name: 'preferredVoice', maxCount: 1 }, { name: 'projectAvatar', maxCount: 1 }]), checkMulter,
+    convertTextToVideo)
 
 
 //Payments
