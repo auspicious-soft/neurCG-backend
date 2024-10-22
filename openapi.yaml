@@ -1004,7 +1004,7 @@ paths:
                     type: string
                     example: Internal Server Error
 
-  /admin/send-latest-updates✅:
+  /admin/send-latest-updates✅☑️:
     post:
       tags:
         - Admin
@@ -1047,7 +1047,7 @@ paths:
                   message:
                     type: string
                     example: Internal Server Error
-  /admin/send-notification✅:
+  /admin/send-notification✅☑️:
     post:
       tags:
         - Admin 
@@ -1091,7 +1091,7 @@ paths:
                     type: string  
                     example: Internal Server Error 
   
-  /admin/send-notification-to-specific-users✅:
+  /admin/send-notification-to-specific-users✅☑️:
     post:
       tags:
         - Admin
@@ -1146,7 +1146,7 @@ paths:
     get:
       tags:
         - Admin
-      summary: Get the avatars 
+      summary: ☑️ Get the avatars 
       description: Get the avatars 
       responses:
         "200":
@@ -1269,7 +1269,7 @@ paths:
                   message:
                     type: string  
                     example: Internal Server Error
-  /admin/avatars/{id}✅:
+  /admin/avatars/{id}✅☑️:
     delete:
       tags:
         - Admin

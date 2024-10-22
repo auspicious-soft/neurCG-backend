@@ -4,11 +4,8 @@ import { errorParser } from "src/lib/errors/error-response-handler";
 import { deleteAvatarService, getAvatarService, postAvatarService } from "../../services/admin/avatar"
 
 export const postAvatar = async (req: Request, res: Response) => {
-    const avatarPic = req.file?.filename
-    const rest = req.body
-    const payload = { ...rest, avatarPic }
     try {
-        const response = await postAvatarService(payload, res)
+        const response = await postAvatarService(req.body, res)
         return res.status(httpStatusCode.CREATED).json(response)
     }
     catch (err: any) {

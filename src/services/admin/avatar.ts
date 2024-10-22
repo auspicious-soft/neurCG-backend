@@ -4,10 +4,9 @@ import { errorResponseHandler } from "src/lib/errors/error-response-handler";
 import { avatarModel } from "src/models/admin/avatar-schema";
 
 export const postAvatarService = async (payload: any, res: Response) => {
-    const { avatarPic } = payload
-    if (!avatarPic) return errorResponseHandler("Avatar is required", httpStatusCode.BAD_REQUEST, res)
-    const newPayload = { ...payload, avatarUrl: avatarPic }
-    const addAvatar = new avatarModel(newPayload)
+    const { avatarUrl } = payload
+    if (!avatarUrl) return errorResponseHandler("Avatar is required", httpStatusCode.BAD_REQUEST, res)
+    const addAvatar = new avatarModel(payload)
     await addAvatar.save()
     return { success: true, message: "Avatar added successfully", data: addAvatar }
 }

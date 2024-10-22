@@ -38,7 +38,7 @@ router.get("/users", checkAuth, getAllUsers)
 router.get("/users/:id", checkAuth, getAUser)
 router.get("/dashboard", checkAuth, getDashboardStats)
 
-router.post("/avatars", upload.single("avatarPic"), checkMulter, checkAuth, postAvatar)
+router.post("/avatars",checkAuth, postAvatar)
 router.get("/avatars", checkAuth, getAvatar)
 router.delete("/avatars/:id", checkAuth, deleteAvatar)
 

@@ -83,7 +83,7 @@ export const newPassswordAfterOTPVerifiedService = async (payload: { password: s
 
 export const getAllUsersService = async (payload: any) => {
     const page = parseInt(payload.page as string) || 1
-    const limit = parseInt(payload.limit as string) || 10
+    const limit = parseInt(payload.limit as string) || 0
     const offset = (page - 1) * limit
     const { query, sort } = queryBuilder(payload, ['firstName', 'lastName'])
     const totalDataCount = Object.keys(query).length < 1 ? await usersModel.countDocuments() : await usersModel.countDocuments(query)
