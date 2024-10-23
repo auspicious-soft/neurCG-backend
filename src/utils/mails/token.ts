@@ -4,7 +4,7 @@ import { passwordResetTokenModel } from "../../models/password-token-schema"
 
 
 export const generatePasswordResetToken = async (email: string) => {
-  const genId = customAlphabet('0123456789', 5)
+  const genId = customAlphabet('0123456789', 4)
   const token = genId()
   const expires = new Date(new Date().getTime() + 3600 * 1000)
 
