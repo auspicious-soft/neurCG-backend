@@ -55,7 +55,7 @@ jobs:
       # Step 8: Deploy to EC2
       - name: Deploy to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_URL "
+          ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_URL << 'ENDSSH'
             set -e
 
             # Clean up EC2 instance
