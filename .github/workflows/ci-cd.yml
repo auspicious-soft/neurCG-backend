@@ -18,7 +18,7 @@ jobs:
 
       # Step 2: Set up Node.js environment
       - name: Set up Node.js
-        uses: actions/setup-node@v4  # Updated to v4
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
 
@@ -55,7 +55,7 @@ jobs:
       # Step 8: Deploy to EC2
       - name: Deploy to EC2
         run: |
-          ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_URL << EOF
+          ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_URL << 'EOF'
             set -e
 
             # Clean up EC2 instance
@@ -76,7 +76,7 @@ jobs:
             docker stop backend || true 
             docker rm backend || true
     
-            echo "Running new container with image: ${{ secrets.DOCKER_USERNAME }}/backend:latest"
+            echo "Running new container..."
             docker run -d -p 8000:8000 --name backend \
               -e MONGO_URL=${{ secrets.MONGO_URL }} \
               -e PORT=${{ secrets.PORT }} \
