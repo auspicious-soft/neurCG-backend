@@ -77,9 +77,7 @@ jobs:
             docker rm backend || true
     
             echo 'Running new container...'
-            docker run -d \\
-              --name backend \\
-              -p 8000:8000 \\
+            docker run -d -p 8000:8000 --name backend \\
               -e MONGO_URL='${{ secrets.MONGO_URL }}' \\
               -e PORT='${{ secrets.PORT }}' \\
               -e NEXT_PUBLIC_APP_URL='${{ secrets.NEXT_PUBLIC_APP_URL }}' \\
