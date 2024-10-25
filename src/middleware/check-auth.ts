@@ -15,6 +15,7 @@ declare global {
 export const checkAuth = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const token = req.headers.authorization?.split(" ")[1]
+        console.log('token: ', token);
         if (!token) return res.status(httpStatusCode.UNAUTHORIZED).json({ success: false, message: "Unauthorized token missing" })
         const decoded = await decode({
             secret: process.env.AUTH_SECRET as string,
