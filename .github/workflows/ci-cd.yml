@@ -104,7 +104,7 @@ jobs:
             echo "Checking disk usage after cleanup..."
             df -h
 
-          EOF
+          ENDSSH
 
  # Install Nginx if not present
             # if ! command -v nginx &> /dev/null
