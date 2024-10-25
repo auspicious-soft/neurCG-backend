@@ -90,37 +90,7 @@ jobs:
               -e FLASK_BACKEND_ML_URL='${{ secrets.FLASK_BACKEND_ML_URL }}' \
               ${{ secrets.DOCKER_USERNAME }}/backend:latest || { echo 'Docker run failed'; exit 1; }
 
-            # Install Nginx if not present
-            if ! command -v nginx &> /dev/null
-            then
-              sudo apt-get update
-              sudo apt-get install -y nginx
-            fi
-    
-            # Create Nginx configuration
-            sudo tee /etc/nginx/sites-available/backend > /dev/null << EOL
-            server {
-                listen 80;
-                server_name ${{ secrets.EC2_URL }};
-    
-                location /api {
-                    proxy_pass http://localhost:8000/;
-                    proxy_http_version 1.1;
-                    proxy_set_header Upgrade $http_upgrade;
-                    proxy_set_header Connection 'upgrade';
-                    proxy_set_header Host $host;
-                    proxy_cache_bypass $http_upgrade;
-                }
-            }
-            EOL
-    
-            # Move temporary config to default location if successful
-            if [ $? -eq 0 ]; then
-              sudo mv /etc/nginx/sites-available/default.tmp /etc/nginx/sites-available/default
-              sudo systemctl restart nginx
-            else
-              echo "Failed to create Nginx config"
-            fi
+           
     
             # Prune unused Docker resources to free up space
             echo "Cleaning up unused Docker resources..."
@@ -135,3 +105,35 @@ jobs:
             df -h
 
           EOF
+
+ # Install Nginx if not present
+            # if ! command -v nginx &> /dev/null
+            # then
+            #   sudo apt-get update
+            #   sudo apt-get install -y nginx
+            # fi
+    
+            # # Create Nginx configuration
+            # sudo tee /etc/nginx/sites-available/backend > /dev/null << EOL
+            # server {
+            #     listen 80;
+            #     server_name ${{ secrets.EC2_URL }};
+    
+            #     location /api {
+            #         proxy_pass http://localhost:8000/;
+            #         proxy_http_version 1.1;
+            #         proxy_set_header Upgrade $http_upgrade;
+            #         proxy_set_header Connection 'upgrade';
+            #         proxy_set_header Host $host;
+            #         proxy_cache_bypass $http_upgrade;
+            #     }
+            # }
+            # EOL
+    
+            # # Move temporary config to default location if successful
+            # if [ $? -eq 0 ]; then
+            #   sudo mv /etc/nginx/sites-available/default.tmp /etc/nginx/sites-available/default
+            #   sudo systemctl restart nginx
+            # else
+            #   echo "Failed to create Nginx config"
+            # fi
