@@ -15,58 +15,58 @@ interface Payload {
 }
 
 // TO create checkout session id to give to frontend
-export const buyPlanService = async (payload: Payload, res: Response) => {
-    const { planType, id, interval = 'month' } = payload
-    const priceId = interval == 'month' ? priceIdsMap[planType] : yearlyPriceIdsMap[planType as 'intro' | 'pro']
-    if (!priceId) return errorResponseHandler("Invalid plan type", httpStatusCode.BAD_REQUEST, res)
-    const metadata = {
-        userId: id,
-        planType,
-    }
-    try {
-        const originalAmount = await getPriceAmountByPriceId(priceId)
-        let unitAmount = originalAmount
-        if (interval === 'year') {
-            const discount = (originalAmount * 0.05)
-            unitAmount = originalAmount - discount
+    export const buyPlanService = async (payload: Payload, res: Response) => {
+        const { planType, id, interval = 'month' } = payload
+        const priceId = interval == 'month' ? priceIdsMap[planType] : yearlyPriceIdsMap[planType as 'intro' | 'pro']
+        if (!priceId) return errorResponseHandler("Invalid plan type", httpStatusCode.BAD_REQUEST, res)
+        const metadata = {
+            userId: id,
+            planType,
         }
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
-            line_items: [{
-                // price: priceId,  either this or the below price_data
-                quantity: 1,
-                price_data: {
-                    currency: 'eur',
-                    product_data: {
-                        name: planType[0].toUpperCase() + planType.slice(1) + ' Plan',
-                        ...(interval === 'year' && { description: '5% discount applied' })
-                    },
-                    unit_amount: unitAmount,
-                    recurring: {
-                        interval
+        try {
+            const originalAmount = await getPriceAmountByPriceId(priceId)
+            let unitAmount = originalAmount
+            if (interval === 'year') {
+                const discount = (originalAmount * 0.05)
+                unitAmount = originalAmount - discount
+            }
+            const session = await stripe.checkout.sessions.create({
+                payment_method_types: ['card'],
+                line_items: [{
+                    // price: priceId,  either this or the below price_data
+                    quantity: 1,
+                    price_data: {
+                        currency: 'eur',
+                        product_data: {
+                            name: planType[0].toUpperCase() + planType.slice(1) + ' Plan',
+                            ...(interval === 'year' && { description: '5% discount applied' })
+                        },
+                        unit_amount: unitAmount,
+                        recurring: {
+                            interval
+                        }
+                    }
+                }],
+                mode: 'subscription',
+                success_url: process.env.STRIPE_FRONTEND_SUCCESS_CALLBACK as string,         // Change to your success URL
+                cancel_url: process.env.STRIPE_FRONTEND_CANCEL_CALLBACK as string,   // Change to your cancel URL
+                metadata,
+                subscription_data: {   //Very imp to remember the subs. to be remembered for later invoicing
+                    metadata: {
+                        userId: id,
+                        planType
                     }
                 }
-            }],
-            mode: 'subscription',
-            success_url: process.env.STRIPE_FRONTEND_SUCCESS_CALLBACK as string,         // Change to your success URL
-            cancel_url: process.env.STRIPE_FRONTEND_CANCEL_CALLBACK as string,   // Change to your cancel URL
-            metadata,
-            subscription_data: {   //Very imp to remember the subs. to be remembered for later invoicing
-                metadata: {
-                    userId: id,
-                    planType
-                }
+            });
+            return {
+                id: session.id,
+                success: true,
             }
-        });
-        return {
-            id: session.id,
-            success: true,
+        } catch (error) {
+            console.log('error: ', error);
         }
-    } catch (error) {
-        console.log('error: ', error);
-    }
 
-}
+    }
 
 
 export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, transaction: mongoose.mongo.ClientSession, res: Response<any, Record<string, any>>) => {
@@ -117,7 +117,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             planType = subs.metadata.planType as 'intro' | 'pro'
             const planAmountInvoice = interval === 'month' ? await getPriceAmountByPriceId(priceIdsMap[planType]) : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType as 'intro' | 'pro']) * 0.95;
             const creditsToAddInvoice = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
-            const invoiceResult = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAddInvoice }, planType, planOrSubscriptionId: 'sub_1QAkt8E1IdTu7GvLJLYpli8Z', planInterval: interval }, { new: true, session: transaction })
+            const invoiceResult = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAddInvoice }, planType, planOrSubscriptionId: session.subscription, planInterval: interval }, { new: true, session: transaction })
 
            await IncomeModel.create([{
                userId,
