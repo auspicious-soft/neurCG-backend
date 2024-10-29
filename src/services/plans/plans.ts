@@ -117,16 +117,16 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             planType = subs.metadata.planType as 'intro' | 'pro'
             const planAmountInvoice = interval === 'month' ? await getPriceAmountByPriceId(priceIdsMap[planType]) : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType as 'intro' | 'pro']) * 0.95;
             const creditsToAddInvoice = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
-            const invoiceResult = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAddInvoice }, planType, planOrSubscriptionId: session.subscription, planInterval: interval }, { new: true, session: transaction })
+            const invoiceResult = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAddInvoice }, planType, planOrSubscriptionId: 'sub_1QAkt8E1IdTu7GvLJLYpli8Z', planInterval: interval }, { new: true, session: transaction })
 
-            await IncomeModel.create([{
-                userId,
-                userName: invoiceResult?.firstName + ' ' + invoiceResult?.lastName,
-                planType,
-                planOrSubscriptionId: session.subscription,
-                planAmountInvoice,
-                monthYear: new Date().toISOString().slice(0, 7),
-                planInterval: interval
+           await IncomeModel.create([{
+               userId,
+               userName: invoiceResult?.firstName + ' ' + invoiceResult?.lastName,
+               planType,
+               planOrSubscriptionId: session.subscription,
+               planAmount: planAmountInvoice,
+               monthYear: new Date().toISOString().slice(0, 7),
+               planInterval: interval
             }], { session: transaction })
             await transaction.commitTransaction()
             return { success: true, message: `User ${userId} has been credited with ${creditsToAddInvoice} credits for plan ${planType}`, data: invoiceResult }
