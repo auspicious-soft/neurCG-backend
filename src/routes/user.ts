@@ -7,6 +7,7 @@ import { getAllNotificationsOfUser, markAllNotificationsAsRead } from "src/contr
 import { getUserProjects, convertTextToVideo } from "src/controllers/projects/projects";
 import { buyPlan, cancelSubscription, updateUserCreditsAfterSuccessPayment } from "src/controllers/plans/plans";
 import { checkAuth } from "src/middleware/check-auth";
+import { getAvatar } from "src/controllers/admin/avatar";
 
 const router = Router();
 
@@ -17,16 +18,14 @@ router.patch("/forgot-password", forgotPassword)
 router.post("/verify-otp", verifyOtpPasswordReset)
 router.patch("/new-password-otp-verified", newPassswordAfterOTPVerified)
 router.patch("/update-password/:id", passwordReset)
+router.get('/avatars', checkAuth, getAvatar)
 
 
 router.route("/:id").get(checkAuth, getUserInfo).put(checkAuth, upload.single("profilePic"), checkMulter, editUserInfo)
-
 router.route("/:id/notifications").get(checkAuth, getAllNotificationsOfUser).put(checkAuth, markAllNotificationsAsRead)
 
 router.get("/:id/projects", checkAuth, getUserProjects)
-router.post("/:id/text-to-video", checkAuth,
-    // upload.fields([{ name: 'preferredVoice', maxCount: 1 }, { name: 'projectAvatar', maxCount: 1 }]), checkMulter,
-    convertTextToVideo)
+router.post("/:id/text-to-video", checkAuth, convertTextToVideo)
 
 
 //Payments
