@@ -8,7 +8,6 @@ import { httpStatusCode } from "src/lib/constant"
 import { errorResponseHandler } from "src/lib/errors/error-response-handler"
 import { projectsModel } from "src/models/user/projects-schema"
 import { usersModel } from "src/models/user/user-schema"
-import FormData from 'form-data'
 // Set up __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -56,9 +55,28 @@ export const convertTextToVideoService = async (payload: any, res: Response) => 
     const user = await usersModel.findById(id)
     if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
 
+
+    const WORDS_PER_MINUTE = 150
+    const SECONDS_PER_CREDIT = 10
+    const words = rest.text.trim().split(/\s+/).length
+    const videoLengthSeconds = Math.ceil(words / WORDS_PER_MINUTE * 60)
+    const creditsExhausted = Math.ceil(videoLengthSeconds / SECONDS_PER_CREDIT)
+
+    if (user.creditsLeft < creditsExhausted) return errorResponseHandler(`Insufficient credits. Required: ${creditsExhausted}, Available: ${user.creditsLeft}`, httpStatusCode.BAD_REQUEST, res)
+
+    const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string
+    const updatedUser = await usersModel.findByIdAndUpdate(id, { $inc: { creditsLeft: -creditsExhausted } }, { new: true })
+
+    if (!updatedUser) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
+
     return {
         success: true,
-        message: "Text converted to video successfully"
+        message: "Text converted to video successfully",
+        data: {
+            creditsUsed: creditsExhausted,
+            creditsRemaining: updatedUser.creditsLeft,
+            estimatedLength: videoLengthSeconds
+        }
     }
 
 }
