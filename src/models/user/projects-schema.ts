@@ -2,17 +2,15 @@
 import { Schema, model } from "mongoose";
 
 const projectsSchema = new Schema({
-
     projectName: { type: String, required: true },
     userId: { type: Schema.Types.ObjectId, required: true, ref: "users" },
+    projectVideoLink: { type: String, required: true },
+    projectAvatar: { type: Schema.Types.Mixed, required: true },
+    subtitles: { type: Boolean, required: true },
     text: { type: String, required: false },
     textLanguage: { type: String, required: false },
     preferredVoice: { type: String, required: false },
-    audio: { type: String, required: false },
-    subtitles: { type: Boolean, required: true },
     subtitlesLanguage: { type: String, required: false },
-    projectAvatar: { type: Schema.Types.Mixed, required: true },
-    projectVideoLink: { type: String, required: true }
 
 }, { timestamps: true })
 

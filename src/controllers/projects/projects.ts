@@ -27,9 +27,7 @@ export const convertTextToVideo = async (req: Request, res: Response) => {
     if (!validation.success) return res.status(httpStatusCode.BAD_REQUEST).json({ success: false, message: formatZodErrors(validation.error) });
     try {
         const response = await convertTextToVideoService({ id: req.params.id, ...req.body }, res)
-        setTimeout(() => {
-            return res.status(httpStatusCode.OK).json(response)
-        }, 3000);
+        return res.status(httpStatusCode.OK).json(response)
     }
     catch (error: any) {
         const { code, message } = errorParser(error)

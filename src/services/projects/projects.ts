@@ -8,6 +8,7 @@ import { httpStatusCode } from "src/lib/constant"
 import { errorResponseHandler } from "src/lib/errors/error-response-handler"
 import { projectsModel } from "src/models/user/projects-schema"
 import { usersModel } from "src/models/user/user-schema"
+import { flaskTextToVideo } from "src/utils";
 // Set up __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -64,20 +65,38 @@ export const convertTextToVideoService = async (payload: any, res: Response) => 
 
     if (user.creditsLeft < creditsExhausted) return errorResponseHandler(`Insufficient credits. Required: ${creditsExhausted}, Available: ${user.creditsLeft}`, httpStatusCode.BAD_REQUEST, res)
 
-    const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string
-    const updatedUser = await usersModel.findByIdAndUpdate(id, { $inc: { creditsLeft: -creditsExhausted } }, { new: true })
-
-    if (!updatedUser) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
-
-    return {
-        success: true,
-        message: "Text converted to video successfully",
-        data: {
-            creditsUsed: creditsExhausted,
-            creditsRemaining: updatedUser.creditsLeft,
-            estimatedLength: videoLengthSeconds
+    const convertedVideo = await flaskTextToVideo({ email: user.email, ...rest }, res)
+    if (convertedVideo) {
+        //  Add to projects collections
+        const newProject = new projectsModel({
+            projectVideoLink: convertedVideo,
+            userId: id,
+            projectName: rest.text.trim().slice(0, 10),
+            projectAvatar: rest.projectAvatar,
+            text: rest.text,
+            textLanguage: rest.textLanguage,
+            preferredVoice: rest.preferredVoice,
+            subtitles: rest.subtitles,
+            subtitlesLanguage: rest.subtitlesLanguage
+        });
+        
+        await newProject.save();
+        
+        // Update user credits
+        const updatedUser = await usersModel.findByIdAndUpdate(id, { $inc: { creditsLeft: -creditsExhausted } }, { new: true })
+        if (!updatedUser) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
+        return {
+            success: true,
+            message: "Text converted to video successfully",
+            data: {
+                creditsUsed: creditsExhausted,
+                creditsRemaining: updatedUser.creditsLeft,
+                estimatedLength: videoLengthSeconds,
+                videoUrl: convertedVideo
+            }
         }
     }
+    else return errorResponseHandler("An error occurred during the API call", httpStatusCode.INTERNAL_SERVER_ERROR, res)
 
 }
 // export const convertTextToVideoService = async (payload: any, res: Response) => {
