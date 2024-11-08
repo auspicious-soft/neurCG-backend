@@ -9,6 +9,7 @@ import { errorResponseHandler } from "src/lib/errors/error-response-handler"
 import { projectsModel } from "src/models/user/projects-schema"
 import { usersModel } from "src/models/user/user-schema"
 import { flaskTextToVideo } from "src/utils";
+import mongoose from "mongoose";
 // Set up __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -51,23 +52,23 @@ export const getUserProjectsService = async (payload: any, res: Response) => {
     }
 }
 
-export const convertTextToVideoService = async (payload: any, res: Response) => {
-    const { id, ...rest } = payload
-    const user = await usersModel.findById(id)
-    if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
+export const convertTextToVideoService = async (payload: any, res: Response, session: mongoose.ClientSession) => {
+    const { id, ...rest } = payload;
 
+    const user = await usersModel.findById(id).session(session);
+    if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res);
 
-    const WORDS_PER_MINUTE = 150
-    const SECONDS_PER_CREDIT = 10
-    const words = rest.text.trim().split(/\s+/).length
-    const videoLengthSeconds = Math.ceil(words / WORDS_PER_MINUTE * 60)
-    const creditsExhausted = Math.ceil(videoLengthSeconds / SECONDS_PER_CREDIT)
+    const WORDS_PER_MINUTE = 150;
+    const SECONDS_PER_CREDIT = 10;
+    const words = rest.text.trim().split(/\s+/).length;
+    const videoLengthSeconds = Math.ceil(words / WORDS_PER_MINUTE * 60);
+    const creditsExhausted = Math.ceil(videoLengthSeconds / SECONDS_PER_CREDIT);
 
-    if (user.creditsLeft < creditsExhausted) return errorResponseHandler(`Insufficient credits. Required: ${creditsExhausted}, Available: ${user.creditsLeft}`, httpStatusCode.BAD_REQUEST, res)
+    if (user.creditsLeft < creditsExhausted) return errorResponseHandler(`Insufficient credits. Required: ${creditsExhausted}, Available: ${user.creditsLeft}`, httpStatusCode.BAD_REQUEST, res);
+    const convertedVideo = await flaskTextToVideo({ email: user.email, ...rest }, res);
 
-    const convertedVideo = await flaskTextToVideo({ email: user.email, ...rest }, res)
     if (convertedVideo) {
-        //  Add to projects collections
+        // Add to projects collections
         const newProject = new projectsModel({
             projectVideoLink: convertedVideo,
             userId: id,
@@ -78,13 +79,16 @@ export const convertTextToVideoService = async (payload: any, res: Response) => 
             preferredVoice: rest.preferredVoice,
             subtitles: rest.subtitles,
             subtitlesLanguage: rest.subtitlesLanguage
-        });
-        
-        await newProject.save();
-        
+        })
+        await newProject.save({ session });
+
         // Update user credits
-        const updatedUser = await usersModel.findByIdAndUpdate(id, { $inc: { creditsLeft: -creditsExhausted } }, { new: true })
-        if (!updatedUser) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
+        const updatedUser = await usersModel.findByIdAndUpdate(id, { $inc: { creditsLeft: -creditsExhausted } }, { new: true, session });
+
+        if (!updatedUser) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res);
+
+        // Commit transaction here
+        await session.commitTransaction()
         return {
             success: true,
             message: "Text converted to video successfully",
@@ -96,9 +100,12 @@ export const convertTextToVideoService = async (payload: any, res: Response) => 
             }
         }
     }
-    else return errorResponseHandler("An error occurred during the API call", httpStatusCode.INTERNAL_SERVER_ERROR, res)
-
+    else {
+        await session.abortTransaction(); // Rollback if video conversion fails
+        return errorResponseHandler("An error occurred during the API call", httpStatusCode.INTERNAL_SERVER_ERROR, res);
+    }
 }
+
 // export const convertTextToVideoService = async (payload: any, res: Response) => {
 //     const { id, ...rest } = payload
 //     const dataToSend = rest.payload
