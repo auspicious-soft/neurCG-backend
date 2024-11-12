@@ -44,7 +44,7 @@ export const loginService = async (payload: loginInterface, res: Response) => {
     //     domain: "24-x7-fx-admin-frontend.vercel.app",
     //     maxAge: 30  24  60  60  1000
     // })
-    return { success: true, message: "Admin Login successfull", data: tokenPayload }
+    return { success: true, message: "Admin Login successfull", data: tokenPayload } 
 }
 
 export const forgotPasswordService = async (email: string, res: Response) => {
