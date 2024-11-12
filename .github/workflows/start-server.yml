@@ -46,5 +46,9 @@ jobs:
               -e AUTH_SECRET='${{ secrets.AUTH_SECRET }}' \
               -e JWT_SALT='${{ secrets.JWT_SALT }}' \
               -e FLASK_BACKEND_ML_URL='${{ secrets.FLASK_BACKEND_ML_URL }}' \
+              -e AWS_ACCESS_KEY_ID='${{ secrets.AWS_ACCESS_KEY_ID }}' \
+              -e AWS_REGION='${{ secrets.AWS_REGION }}' \
+              -e AWS_SECRET_ACCESS_KEY='${{ secrets.AWS_SECRET_ACCESS_KEY }}' \
+              -e AWS_BUCKET_NAME='${{ secrets.AWS_BUCKET_NAME }}' \ 
               ${{ secrets.DOCKER_USERNAME }}/backend:latest || { echo "Docker run failed"; exit 1; }
           ENDSSH
