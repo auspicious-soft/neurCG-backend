@@ -128,13 +128,11 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     const interval = await (subs as any).plan.interval
     switch (event.type) {
         case 'checkout.session.completed':
-            console.log('checkout.session.completed');
             userId = session.metadata.userId
             planType = session.metadata.planType
             const user = await usersModel.findById(userId)
             const planAmount = interval === 'month' ? await getPriceAmountByPriceId(priceIdsMap[planType]) : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType as 'intro' | 'pro']) * 0.95;
             const creditsToAdd = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
-            console.log('creditsToAdd: ', creditsToAdd);
             const currentSubscriptionId = user?.planOrSubscriptionId
             if (currentSubscriptionId && currentSubscriptionId !== session.subscription) {
                 await stripe.subscriptions.cancel(currentSubscriptionId)
