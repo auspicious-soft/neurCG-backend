@@ -15,58 +15,58 @@ interface Payload {
 }
 
 // TO create checkout session id to give to frontend
-    export const buyPlanService = async (payload: Payload, res: Response) => {
-        const { planType, id, interval = 'month' } = payload
-        const priceId = interval == 'month' ? priceIdsMap[planType] : yearlyPriceIdsMap[planType as 'intro' | 'pro']
-        if (!priceId) return errorResponseHandler("Invalid plan type", httpStatusCode.BAD_REQUEST, res)
-        const metadata = {
-            userId: id,
-            planType,
+export const buyPlanService = async (payload: Payload, res: Response) => {
+    const { planType, id, interval = 'month' } = payload
+    const priceId = interval == 'month' ? priceIdsMap[planType] : yearlyPriceIdsMap[planType as 'intro' | 'pro']
+    if (!priceId) return errorResponseHandler("Invalid plan type", httpStatusCode.BAD_REQUEST, res)
+    const metadata = {
+        userId: id,
+        planType,
+    }
+    try {
+        const originalAmount = await getPriceAmountByPriceId(priceId)
+        let unitAmount = originalAmount
+        if (interval === 'year') {
+            const discount = (originalAmount * 0.05)
+            unitAmount = originalAmount - discount
         }
-        try {
-            const originalAmount = await getPriceAmountByPriceId(priceId)
-            let unitAmount = originalAmount
-            if (interval === 'year') {
-                const discount = (originalAmount * 0.05)
-                unitAmount = originalAmount - discount
-            }
-            const session = await stripe.checkout.sessions.create({
-                payment_method_types: ['card'],
-                line_items: [{
-                    // price: priceId,  either this or the below price_data
-                    quantity: 1,
-                    price_data: {
-                        currency: 'eur',
-                        product_data: {
-                            name: planType[0].toUpperCase() + planType.slice(1) + ' Plan',
-                            ...(interval === 'year' && { description: '5% discount applied' })
-                        },
-                        unit_amount: unitAmount,
-                        recurring: {
-                            interval
-                        }
-                    }
-                }],
-                mode: 'subscription',
-                success_url: process.env.STRIPE_FRONTEND_SUCCESS_CALLBACK as string,         // Change to your success URL
-                cancel_url: process.env.STRIPE_FRONTEND_CANCEL_CALLBACK as string,   // Change to your cancel URL
-                metadata,
-                subscription_data: {   //Very imp to remember the subs. to be remembered for later invoicing
-                    metadata: {
-                        userId: id,
-                        planType
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [{
+                // price: priceId,  either this or the below price_data
+                quantity: 1,
+                price_data: {
+                    currency: 'eur',
+                    product_data: {
+                        name: planType[0].toUpperCase() + planType.slice(1) + ' Plan',
+                        ...(interval === 'year' && { description: '5% discount applied' })
+                    },
+                    unit_amount: unitAmount,
+                    recurring: {
+                        interval
                     }
                 }
-            });
-            return {
-                id: session.id,
-                success: true,
+            }],
+            mode: 'subscription',
+            success_url: process.env.STRIPE_FRONTEND_SUCCESS_CALLBACK as string,         // Change to your success URL
+            cancel_url: process.env.STRIPE_FRONTEND_CANCEL_CALLBACK as string,   // Change to your cancel URL
+            metadata,
+            subscription_data: {   //Very imp to remember the subs. to be remembered for later invoicing
+                metadata: {
+                    userId: id,
+                    planType
+                }
             }
-        } catch (error) {
-            console.log('error: ', error);
+        });
+        return {
+            id: session.id,
+            success: true,
         }
-
+    } catch (error) {
+        console.log('error: ', error);
     }
+
+}
 
 
 export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, transaction: mongoose.mongo.ClientSession, res: Response<any, Record<string, any>>) => {
@@ -93,6 +93,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             const user = await usersModel.findById(userId)
             const planAmount = interval === 'month' ? await getPriceAmountByPriceId(priceIdsMap[planType]) : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType as 'intro' | 'pro']) * 0.95;
             const creditsToAdd = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
+            console.log('creditsToAdd: ', creditsToAdd);
             const currentSubscriptionId = user?.planOrSubscriptionId
             if (currentSubscriptionId && currentSubscriptionId !== session.subscription) {
                 await stripe.subscriptions.cancel(currentSubscriptionId)
@@ -119,14 +120,14 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             const creditsToAddInvoice = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
             const invoiceResult = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAddInvoice }, planType, planOrSubscriptionId: session.subscription, planInterval: interval }, { new: true, session: transaction })
 
-           await IncomeModel.create([{
-               userId,
-               userName: invoiceResult?.firstName + ' ' + invoiceResult?.lastName,
-               planType,
-               planOrSubscriptionId: session.subscription,
-               planAmount: planAmountInvoice,
-               monthYear: new Date().toISOString().slice(0, 7),
-               planInterval: interval
+            await IncomeModel.create([{
+                userId,
+                userName: invoiceResult?.firstName + ' ' + invoiceResult?.lastName,
+                planType,
+                planOrSubscriptionId: session.subscription,
+                planAmount: planAmountInvoice,
+                monthYear: new Date().toISOString().slice(0, 7),
+                planInterval: interval
             }], { session: transaction })
             await transaction.commitTransaction()
             return { success: true, message: `User ${userId} has been credited with ${creditsToAddInvoice} credits for plan ${planType}`, data: invoiceResult }
