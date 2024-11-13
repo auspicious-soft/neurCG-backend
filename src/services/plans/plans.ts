@@ -114,6 +114,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
         },
         { upsert: true }
     )
+    console.log('existingEvent: ', existingEvent);
     if (existingEvent) {
         console.log(`Event ${event.id} or session with idempotency key ${session.metadata?.idempotencyKey} has already been processed.`);
         return { success: true, message: 'Event already processed' };
