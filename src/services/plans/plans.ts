@@ -90,6 +90,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     }
     // console.log('✅ Success:', checkSignature.id);
     const event = payload.body
+    console.log('event: ', event);
     const session = event.data.object;
     console.log('event.id : ', event.id);
     let idempotentKey = session.metadata?.idempotencyKey;
