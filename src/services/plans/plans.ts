@@ -71,7 +71,7 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
             key: idempotencyKey,
             userId: id,
             sessionId: session.id,
-            createdAt: new Date()
+            createdAt: new Date(),
         })
         return {
             id: session.id,
@@ -97,6 +97,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     // console.log('✅ Success:', checkSignature.id);
     const event = payload.body
     const session = event.data.object;
+    console.log('event.id : ', event.id );
     const existingEvent = await IdempotencyKeyModel.findOne({
         $or: [
             { eventId: event.id },
@@ -107,7 +108,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
         console.log(`Event ${event.id} or session with idempotency key ${session.metadata?.idempotencyKey} has already been processed.`);
         return { success: true, message: 'Event already processed' };
     }
-    if (event.id) {
+    if (event.id !== null) {
         await IdempotencyKeyModel.findOneAndUpdate(
             { key: session.metadata?.idempotencyKey },
             {
@@ -117,7 +118,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
                     processedAt: new Date()
                 }
             },
-            { upsert: true }
+            { upsert: false }
         )
     }
     console.log('existingEvent: ', existingEvent)
