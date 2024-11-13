@@ -131,15 +131,25 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             userId = session.metadata.userId
             planType = session.metadata.planType
             const user = await usersModel.findById(userId)
-            console.log('user: ', user);
             const planAmount = interval === 'month' ? await getPriceAmountByPriceId(priceIdsMap[planType]) : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType as 'intro' | 'pro']) * 0.95;
             const creditsToAdd = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
             const currentSubscriptionId = user?.planOrSubscriptionId
-            console.log('session.subscription: ', session.subscription);
             if (currentSubscriptionId && currentSubscriptionId !== session.subscription) {
-                await stripe.subscriptions.cancel(currentSubscriptionId)
+                const subscriptionExists = await stripe.subscriptions.retrieve(currentSubscriptionId)
+                if (subscriptionExists) {
+                    await stripe.subscriptions.cancel(currentSubscriptionId)
+                }
             }
-            const result = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAdd }, planType, planOrSubscriptionId: session.subscription, planInterval: interval }, { new: true, session: transaction });
+            const result = await usersModel.findByIdAndUpdate(userId, {
+                $inc: { creditsLeft: creditsToAdd },
+                planType,
+                planOrSubscriptionId: session.subscription,
+                planInterval: interval
+            },
+                {
+                    new: true,
+                    session: transaction
+                })
             console.log('result: ', result);
             await IncomeModel.create([{
                 userId,
