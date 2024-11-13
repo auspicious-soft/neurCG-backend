@@ -73,8 +73,6 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     const sig = payload.headers['stripe-signature'];
     let checkSignature: Stripe.Event;
     try {
-        console.log('payload.rawBody: ', payload.rawBody);
-        console.log('process.env.STRIPE_WEBHOOK_SECRET: ', process.env.STRIPE_WEBHOOK_SECRET);
         checkSignature = stripe.webhooks.constructEvent(payload.rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET as string);
     } catch (err: any) {
         console.log(`❌ Error message: ${err.message}`);
