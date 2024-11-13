@@ -138,6 +138,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
                 await stripe.subscriptions.cancel(currentSubscriptionId)
             }
             const result = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAdd }, planType, planOrSubscriptionId: session.subscription, planInterval: interval }, { new: true, session: transaction });
+            console.log('result: ', result);
             await IncomeModel.create([{
                 userId,
                 userName: result?.firstName + ' ' + result?.lastName,
