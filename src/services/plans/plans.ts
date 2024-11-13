@@ -67,12 +67,12 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
             {
                 idempotencyKey // Pass idempotency key to Stripe
             })
-        await IdempotencyKeyModel.create({
-            key: idempotencyKey,
-            userId: id,
-            sessionId: session.id,
-            createdAt: new Date(),
-        })
+        // await IdempotencyKeyModel.create({
+        //     key: idempotencyKey,
+        //     userId: id,
+        //     sessionId: session.id,
+        //     createdAt: new Date(),
+        // })
         return {
             id: session.id,
             success: true,
