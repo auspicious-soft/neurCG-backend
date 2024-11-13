@@ -136,7 +136,6 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             const currentSubscriptionId = user?.planOrSubscriptionId
             if (currentSubscriptionId && currentSubscriptionId !== session.subscription) {
                 const subscriptionExists = await stripe.subscriptions.retrieve(currentSubscriptionId)
-                console.log('subscriptionExists: ', subscriptionExists);
                 if (subscriptionExists) {
                     await stripe.subscriptions.cancel(currentSubscriptionId)
                 }
@@ -151,7 +150,6 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
                     new: true,
                     session: transaction
                 })
-            console.log('result: ', result);
             await IncomeModel.create([{
                 userId,
                 userName: result?.firstName + ' ' + result?.lastName,
