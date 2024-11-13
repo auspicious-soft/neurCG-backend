@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import Stripe from "stripe";
 import { notificationsModel } from "src/models/admin/notification-schema";
 import { IdempotencyKeyModel } from "src/models/idempotency-schema";
+import { v4 as uuidv4 } from 'uuid';
 
 interface Payload {
     id: string;
@@ -20,9 +21,12 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
     const { planType, id, interval = 'month' } = payload
     const priceId = interval == 'month' ? priceIdsMap[planType] : yearlyPriceIdsMap[planType as 'intro' | 'pro']
     if (!priceId) return errorResponseHandler("Invalid plan type", httpStatusCode.BAD_REQUEST, res)
+    const idempotencyKey = uuidv4()
+
     const metadata = {
         userId: id,
         planType,
+        idempotencyKey, // Store the key in metadata for reference
     }
     try {
         const originalAmount = await getPriceAmountByPriceId(priceId)
@@ -55,10 +59,20 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
             subscription_data: {   //Very imp to remember the subs. to be remembered for later invoicing
                 metadata: {
                     userId: id,
-                    planType
+                    planType,
+                    idempotencyKey
                 }
             }
-        });
+        },
+            {
+                idempotencyKey // Pass idempotency key to Stripe
+            })
+        await IdempotencyKeyModel.create({
+            key: idempotencyKey,
+            userId: id,
+            sessionId: session.id,
+            createdAt: new Date()
+        })
         return {
             id: session.id,
             success: true,
@@ -83,14 +97,28 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     // console.log('✅ Success:', checkSignature.id);
     const event = payload.body
     const session = event.data.object;
-    console.log('event.id: ', event.id);
-    const existingEvent = await IdempotencyKeyModel.findOne({ eventId: event.id })
+    const existingEvent = await IdempotencyKeyModel.findOne({
+        $or: [
+            { eventId: event.id },
+            { key: session.metadata?.idempotencyKey }
+        ]
+    })
+    await IdempotencyKeyModel.findOneAndUpdate(
+        { key: session.metadata?.idempotencyKey },
+        { 
+            $set: { 
+                eventId: event.id,
+                processed: true,
+                processedAt: new Date()
+            }
+        },
+        { upsert: true }
+    )
     if (existingEvent) {
-        console.log(`Event ${event.id} has already been processed.`)
-        return { success: true, message: 'Event already processed' }
+        console.log(`Event ${event.id} or session with idempotency key ${session.metadata?.idempotencyKey} has already been processed.`);
+        return { success: true, message: 'Event already processed' };
     }
-    // Save the idempotency key
-    await IdempotencyKeyModel.create({ eventId: event.id })
+
     let userId                                    // Ensure you're sending this when creating the session
     let planType: 'free' | 'intro' | 'pro'                // Ensure you're sending this when creating the session
     const subs = await stripe.subscriptions.retrieve(session.subscription)
