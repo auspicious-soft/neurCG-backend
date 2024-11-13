@@ -107,17 +107,19 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
         console.log(`Event ${event.id} or session with idempotency key ${session.metadata?.idempotencyKey} has already been processed.`);
         return { success: true, message: 'Event already processed' };
     }
-    await IdempotencyKeyModel.findOneAndUpdate(
-        { key: session.metadata?.idempotencyKey },
-        { 
-            $set: { 
-                eventId: event.id,
-                processed: true,
-                processedAt: new Date()
-            }
-        },
-        { upsert: true }
-    )
+    if (event.id) {
+        await IdempotencyKeyModel.findOneAndUpdate(
+            { key: session.metadata?.idempotencyKey },
+            {
+                $set: {
+                    eventId: event.id,
+                    processed: true,
+                    processedAt: new Date()
+                }
+            },
+            { upsert: true }
+        )
+    }
     console.log('existingEvent: ', existingEvent)
 
     let userId                                    // Ensure you're sending this when creating the session
