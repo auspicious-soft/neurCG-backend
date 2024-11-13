@@ -104,7 +104,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             { key: idempotentKey }
         ]
     })
-    if (existingEvent) {
+    if (existingEvent) { 
         // console.log(`Event ${event.id} or session with idempotency key ${idempotentKey} has already been processed.`);
         return { success: true, message: 'Event already processed' };
     }
@@ -136,6 +136,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             const currentSubscriptionId = user?.planOrSubscriptionId
             if (currentSubscriptionId && currentSubscriptionId !== session.subscription) {
                 const subscriptionExists = await stripe.subscriptions.retrieve(currentSubscriptionId)
+                console.log('subscriptionExists: ', subscriptionExists);
                 if (subscriptionExists) {
                     await stripe.subscriptions.cancel(currentSubscriptionId)
                 }
