@@ -90,15 +90,14 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     }
     // console.log('✅ Success:', checkSignature.id);
     const event = payload.body
-    console.log('event: ', event);
     const session = event.data.object;
     let idempotentKey = session.metadata?.idempotencyKey;
+    console.log('idempotentKey: ', idempotentKey);
 
-    if (!idempotentKey && session.subscription) { 
+    if (!idempotentKey && session.subscription) {
         const subscription = await stripe.subscriptions.retrieve(session.subscription);
         idempotentKey = subscription.metadata?.idempotencyKey || "defaultKey"; // Fallback to "defaultKey" if still undefined
     }
-    console.log('idempotentKey: ', idempotentKey);
     const existingEvent = await IdempotencyKeyModel.findOne({
         $or: [
             { eventId: event.id },
@@ -106,7 +105,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
         ]
     })
     if (existingEvent) {
-        console.log(`Event ${event.id} or session with idempotency key ${idempotentKey} has already been processed.`);
+        // console.log(`Event ${event.id} or session with idempotency key ${idempotentKey} has already been processed.`);
         return { success: true, message: 'Event already processed' };
     }
     if (event.id) {
