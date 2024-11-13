@@ -7,6 +7,7 @@ import { IncomeModel } from "src/models/admin/income-schema";
 import mongoose from "mongoose";
 import Stripe from "stripe";
 import { notificationsModel } from "src/models/admin/notification-schema";
+import { IdempotencyKeyModel } from "src/models/idempotency-schema";
 
 interface Payload {
     id: string;
@@ -82,6 +83,14 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     // console.log('✅ Success:', checkSignature.id);
     const event = payload.body
     const session = event.data.object;
+    console.log('event.id: ', event.id);
+    const existingEvent = await IdempotencyKeyModel.findOne({ eventId: event.id })
+    if (existingEvent) {
+        console.log(`Event ${event.id} has already been processed.`)
+        return { success: true, message: 'Event already processed' }
+    }
+    // Save the idempotency key
+    await IdempotencyKeyModel.create({ eventId: event.id })
     let userId                                    // Ensure you're sending this when creating the session
     let planType: 'free' | 'intro' | 'pro'                // Ensure you're sending this when creating the session
     const subs = await stripe.subscriptions.retrieve(session.subscription)
