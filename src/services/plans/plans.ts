@@ -97,20 +97,22 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     // console.log('✅ Success:', checkSignature.id);
     const event = payload.body
     const session = event.data.object;
-    console.log('event.id : ', event.id );
+    console.log('event.id : ', event.id);
+    let idempotentKey = session.metadata?.idempotencyKey 
+    console.log('idempotentKey: ', idempotentKey);
     const existingEvent = await IdempotencyKeyModel.findOne({
         $or: [
             { eventId: event.id },
-            { key: session.metadata?.idempotencyKey }
+            { key: idempotentKey }
         ]
     })
     if (existingEvent) {
-        console.log(`Event ${event.id} or session with idempotency key ${session.metadata?.idempotencyKey} has already been processed.`);
+        console.log(`Event ${event.id} or session with idempotency key ${idempotentKey} has already been processed.`);
         return { success: true, message: 'Event already processed' };
     }
-    if (event.id !== null) {
+    if (event.id) {
         await IdempotencyKeyModel.findOneAndUpdate(
-            { key: session.metadata?.idempotencyKey },
+            { key: idempotentKey },
             {
                 $set: {
                     eventId: event.id,
@@ -118,7 +120,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
                     processedAt: new Date()
                 }
             },
-            { upsert: false }
+            { upsert: true }
         )
     }
     console.log('existingEvent: ', existingEvent)
