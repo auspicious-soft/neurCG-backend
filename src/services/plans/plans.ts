@@ -95,7 +95,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     console.log('event.id : ', event.id);
     let idempotentKey = session.metadata?.idempotencyKey;
 
-    if (!idempotentKey && session.subscription) {
+    if (!idempotentKey && session.subscription) { 
         const subscription = await stripe.subscriptions.retrieve(session.subscription);
         idempotentKey = subscription.metadata?.idempotencyKey || "defaultKey"; // Fallback to "defaultKey" if still undefined
     }
