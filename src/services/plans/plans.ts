@@ -92,7 +92,6 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     const event = payload.body
     console.log('event: ', event);
     const session = event.data.object;
-    console.log('event.id : ', event.id);
     let idempotentKey = session.metadata?.idempotencyKey;
 
     if (!idempotentKey && session.subscription) { 
@@ -123,7 +122,6 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             { upsert: true }
         )
     }
-    console.log('existingEvent: ', existingEvent)
 
     let userId                                    // Ensure you're sending this when creating the session
     let planType: 'free' | 'intro' | 'pro'                // Ensure you're sending this when creating the session
@@ -131,6 +129,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     const interval = await (subs as any).plan.interval
     switch (event.type) {
         case 'checkout.session.completed':
+            console.log('checkout.session.completed');
             userId = session.metadata.userId
             planType = session.metadata.planType
             const user = await usersModel.findById(userId)
