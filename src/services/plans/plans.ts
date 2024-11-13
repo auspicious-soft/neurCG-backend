@@ -67,12 +67,6 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
             {
                 idempotencyKey // Pass idempotency key to Stripe
             })
-        // await IdempotencyKeyModel.create({
-        //     key: idempotencyKey,
-        //     userId: id,
-        //     sessionId: session.id,
-        //     createdAt: new Date(),
-        // })
         return {
             id: session.id,
             success: true,
@@ -98,7 +92,12 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     const event = payload.body
     const session = event.data.object;
     console.log('event.id : ', event.id);
-    let idempotentKey = session.metadata?.idempotencyKey 
+    let idempotentKey = session.metadata?.idempotencyKey;
+
+    if (!idempotentKey && session.subscription) {
+        const subscription = await stripe.subscriptions.retrieve(session.subscription);
+        idempotentKey = subscription.metadata?.idempotencyKey || "defaultKey"; // Fallback to "defaultKey" if still undefined
+    }
     console.log('idempotentKey: ', idempotentKey);
     const existingEvent = await IdempotencyKeyModel.findOne({
         $or: [
