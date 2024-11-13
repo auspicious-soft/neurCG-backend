@@ -118,7 +118,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
         },
         { upsert: true }
     )
-    console.log('existingEvent: ', existingEvent);
+    console.log('existingEvent: ', existingEvent)
 
     let userId                                    // Ensure you're sending this when creating the session
     let planType: 'free' | 'intro' | 'pro'                // Ensure you're sending this when creating the session
