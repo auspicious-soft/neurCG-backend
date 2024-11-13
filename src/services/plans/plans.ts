@@ -108,7 +108,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
         // console.log(`Event ${event.id} or session with idempotency key ${idempotentKey} has already been processed.`);
         return { success: true, message: 'Event already processed' };
     }
-    if (event.id && idempotentKey) {
+    if (event.id) {
         await IdempotencyKeyModel.findOneAndUpdate(
             { key: idempotentKey },
             {
@@ -131,8 +131,6 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             userId = session.metadata.userId
             planType = session.metadata.planType
             const user = await usersModel.findById(userId)
-            console.log('user: ', user);
-            console.log('session.subscription: ', session.subscription);
             const planAmount = interval === 'month' ? await getPriceAmountByPriceId(priceIdsMap[planType]) : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType as 'intro' | 'pro']) * 0.95;
             const creditsToAdd = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
             const currentSubscriptionId = user?.planOrSubscriptionId
