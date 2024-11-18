@@ -36,8 +36,8 @@ export const convertToBoolean = (value: string) => {
     else return value
 }
 
-export const increaseReferredCount = async (id: mongoose.Types.ObjectId) => {
-    await usersModel.findByIdAndUpdate(id, { $inc: { referredCount: 1 } })
+export const increaseReferredCountAndCredits = async (id: mongoose.Types.ObjectId) => {
+    await usersModel.findByIdAndUpdate(id, { $inc: { referredCount: 1, creditsLeft: 10 } })
 }
 
 export const flaskTextToVideo = async (payload: any, res: Response) => {

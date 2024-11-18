@@ -8,7 +8,7 @@ import { httpStatusCode } from "../../lib/constant"
 import mongoose from "mongoose"
 import { passwordResetTokenModel } from "../../models/password-token-schema"
 import { customAlphabet } from "nanoid"
-import { increaseReferredCount } from "src/utils"
+import { increaseReferredCountAndCredits } from "src/utils"
 import { sendNotificationToUserService } from "../notifications/notifications"
 
 
@@ -25,7 +25,7 @@ export const signupService = async (payload: any, res: Response) => {
         const referredBy = await usersModel.findOne({ myReferralCode: `${process.env.NEXT_PUBLIC_APP_URL}/signup?referralCode=${payload.referralCode}` })
         if (referredBy) {
             payload.referredBy = referredBy._id           //Set my referred by
-            await increaseReferredCount(referredBy._id)   //Increase referred count of the person who referred me
+            await increaseReferredCountAndCredits(referredBy._id)   //Increase referred count of the person who referred me
             await sendNotificationToUserService({ title: "Referral", message: "Congrats! A new user has signed up with your referral code", ids: [referredBy._id.toString()] }, res)   //Sending THE NOTIFICATION TO THE USER WHO REFERRED ME
         }
     }
