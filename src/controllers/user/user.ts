@@ -99,7 +99,7 @@ export const getUserInfo = async (req: Request, res: Response) => {
 }
 
 export const editUserInfo = async (req: Request, res: Response) => {
-    const payload = { ...req.body, profilePic: req.file?.filename }
+    const payload = req.body
     const newPayload = { ...payload, id: req.params.id }
     if (payload.dob && typeof payload.dob === 'string') {
         newPayload.dob = new Date(newPayload.dob)

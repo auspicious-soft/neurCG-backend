@@ -21,7 +21,7 @@ router.patch("/update-password/:id", passwordReset)
 router.get('/avatars', checkAuth, getAvatar)
 
 
-router.route("/:id").get(checkAuth, getUserInfo).put(checkAuth, upload.single("profilePic"), checkMulter, editUserInfo)
+router.route("/:id").get(checkAuth, getUserInfo).put(checkAuth, editUserInfo)
 router.route("/:id/notifications").get(checkAuth, getAllNotificationsOfUser).put(checkAuth, markAllNotificationsAsRead)
 
 router.get("/:id/projects", checkAuth, getUserProjects)
