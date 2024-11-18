@@ -11,7 +11,8 @@ const projectsSchema = new Schema({
     textLanguage: { type: String, required: false },
     preferredVoice: { type: String, required: false },
     subtitlesLanguage: { type: String, required: false },
-
+    audio: { type: String, required: false },
+    duration: { type: Number, required: false }
 }, { timestamps: true })
 
 export const projectsModel = model("projects", projectsSchema)

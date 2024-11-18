@@ -8,7 +8,7 @@ import { httpStatusCode } from "src/lib/constant"
 import { errorResponseHandler } from "src/lib/errors/error-response-handler"
 import { projectsModel } from "src/models/user/projects-schema"
 import { usersModel } from "src/models/user/user-schema"
-import { flaskTextToVideo } from "src/utils";
+import { flaskTextToVideo, flaskAudioToVideo } from "src/utils";
 import mongoose from "mongoose";
 // Set up __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url)
@@ -65,7 +65,7 @@ export const convertTextToVideoService = async (payload: any, res: Response, ses
     const creditsExhausted = Math.ceil(videoLengthSeconds / SECONDS_PER_CREDIT);
 
     if (user.creditsLeft < creditsExhausted) return errorResponseHandler(`Insufficient credits. Required: ${creditsExhausted}, Available: ${user.creditsLeft}`, httpStatusCode.BAD_REQUEST, res);
-    const convertedVideo = await flaskTextToVideo({ email: user.email, ...rest }, res);
+    const convertedVideo = await flaskTextToVideo({ duration: videoLengthSeconds, email: user.email, ...rest }, res);
 
     if (convertedVideo) {
         // Add to projects collections
@@ -78,7 +78,8 @@ export const convertTextToVideoService = async (payload: any, res: Response, ses
             textLanguage: rest.textLanguage,
             preferredVoice: rest.preferredVoice,
             subtitles: rest.subtitles,
-            subtitlesLanguage: rest.subtitlesLanguage
+            subtitlesLanguage: rest.subtitlesLanguage,
+            duration: videoLengthSeconds
         })
         await newProject.save({ session });
 
@@ -106,46 +107,51 @@ export const convertTextToVideoService = async (payload: any, res: Response, ses
     }
 }
 
-// export const convertTextToVideoService = async (payload: any, res: Response) => {
-//     const { id, ...rest } = payload
-//     const dataToSend = rest.payload
-//     const user = await usersModel.findById(id)
-//     if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
-//     const formData = new FormData();
-//     formData.append('data', JSON.stringify(dataToSend))
+export const convertaAudioToVideoService = async (payload: any, res: Response, session: mongoose.ClientSession) => {
+    const { id, ...rest } = payload;
 
-//     const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string
-//     // const response = await axios.post(flaskUrl)
-//     const srcDir = path.join(__dirname, '..', '..')
-//     if (dataToSend.audio) {
-//         const audioPath = path.join(srcDir, dataToSend.audio);
-//         const audioContent = fs.readFileSync(audioPath);
-//         formData.append('audio', audioContent, dataToSend.audio);
-//     }
-//     const projectAvatarPath = path.join(srcDir, dataToSend.projectAvatar);
-//     const projectAvatarContent = fs.readFileSync(projectAvatarPath);
-//     formData.append('projectAvatar', projectAvatarContent, { filename: path.basename(projectAvatarPath) })
-//     try {
-//         const response = await axios.get(flaskUrl,
-//             //  formData, {
-//             // headers: formData.getHeaders()
+    const user = await usersModel.findById(id).session(session);
+    if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res);
 
-//         // }
-//     );
-//         if (dataToSend.audio) {
-//             const audioPath = path.join(srcDir, dataToSend.audio);
-//             deleteFile(audioPath);
-//         }
-//         if (dataToSend.projectAvatar) {
-//             const projectAvatarPath = path.join(srcDir, dataToSend.projectAvatar);
-//             deleteFile(projectAvatarPath);
-//         }
-//         return {
-//             success: true,
-//             message: "Text converted to video successfully"
-//         }
-//     } catch (error) {
-//         console.error('Error during API call:', error);
-//         return errorResponseHandler("An error occurred during the API call", httpStatusCode.INTERNAL_SERVER_ERROR, res);
-//     }
-// }
+    const duration = rest.audioLength
+    const SECONDS_PER_CREDIT = 10;
+    const creditsExhausted = Math.floor(duration / SECONDS_PER_CREDIT)
+    if (user.creditsLeft < creditsExhausted) return errorResponseHandler(`Insufficient credits. Required: ${creditsExhausted}, Available: ${user.creditsLeft}`, httpStatusCode.BAD_REQUEST, res)
+    const convertedVideo = await flaskAudioToVideo({ duration, email: user.email, ...rest }, res);
+    if (convertedVideo) {
+        // Add to projects collections
+        const newProject = new projectsModel({
+            userId: id,
+            projectVideoLink: convertedVideo,
+            audio: rest.audio,
+            projectName: Math.random().toString(36).substring(7),
+            projectAvatar: rest.projectAvatar,
+            subtitles: rest.subtitles,
+            subtitlesLanguage: rest.subtitlesLanguage,
+            duration
+        })
+        await newProject.save({ session });
+
+        // Update user credits
+        const updatedUser = await usersModel.findByIdAndUpdate(id, { $inc: { creditsLeft: -creditsExhausted } }, { new: true, session });
+
+        if (!updatedUser) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res);
+
+        // Commit transaction here
+        await session.commitTransaction()
+        return {
+            success: true,
+            message: "Audio converted to video successfully",
+            data: {
+                creditsUsed: creditsExhausted,
+                creditsRemaining: updatedUser.creditsLeft,
+                estimatedLength: duration,
+                videoUrl: convertedVideo
+            }
+        }
+    }
+    else {
+        await session.abortTransaction(); // Rollback if video conversion fails
+        return errorResponseHandler("An error occurred during the API call", httpStatusCode.INTERNAL_SERVER_ERROR, res);
+    }
+}

@@ -42,3 +42,13 @@ export const requestTextToVideoSchema = z.object({
 }).strict({
     message: "Bad payload present in the data"
 })
+
+export const requestAudioToVideoSchema = z.object({
+    audio: z.string().min(1),
+    audioLength: z.number().min(1),
+    projectAvatar: z.string().min(1),
+    subtitles: z.boolean(),
+    subtitlesLanguage: z.string().optional(),
+}).strict({
+    message: "Bad payload present in the data"
+})
