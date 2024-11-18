@@ -80,7 +80,6 @@ export const flaskTextToVideo = async (payload: any, res: Response) => {
 }
 
 export const flaskAudioToVideo = async (payload: any, res: Response) => {
-    console.log('payload: ', payload);
     try {
         const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string
         const formData = new FormData()
