@@ -121,9 +121,10 @@ export const flaskTranslateVideo = async (payload: any, res: Response) => {
         const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string
         const formData = new FormData()
         formData.append('video_url', `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${payload.video}`)
-        formData.append('image_url', `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${payload.projectAvatar}`)
         formData.append('original_text', payload.originalText)
         formData.append('translated_text', payload.translatedText)
+        formData.append('image_url', `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${payload.projectAvatar}`)
+        formData.append('preferred_voice', `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${payload.preferredVoice}`)
         formData.append('subtitles', payload.subtitles)
         formData.append('subtitles_language', payload.subtitlesLanguage)
         formData.append('duration', payload.duration)
