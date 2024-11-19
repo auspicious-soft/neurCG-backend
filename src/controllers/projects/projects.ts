@@ -2,8 +2,8 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { httpStatusCode } from "src/lib/constant";
 import { errorParser } from "src/lib/errors/error-response-handler";
-import { getUserProjectsService, convertTextToVideoService, convertaAudioToVideoService } from "src/services/projects/projects";
-import { requestAudioToVideoSchema, requestTextToVideoSchema } from "src/validation/client-user";
+import { getUserProjectsService, convertTextToVideoService, convertaAudioToVideoService, translateVideoService } from "src/services/projects/projects";
+import { requestAudioToVideoSchema, requestTextToVideoSchema, requestVideoTranslationSchema } from "src/validation/client-user";
 import { formatZodErrors } from "src/validation/format-zod-errors";
 
 export const getUserProjects = async (req: Request, res: Response) => {
@@ -45,6 +45,22 @@ export const convertAudioToVideo = async (req: Request, res: Response) => {
         await session.startTransaction();
         const payload = { id: req.params.id, ...req.body };
         const response = await convertaAudioToVideoService(payload, res, session);
+        return res.status(httpStatusCode.OK).json(response);
+    } catch (error) {
+        const { code, message } = errorParser(error)
+        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" })
+    }
+}
+
+export const translateVideo = async (req: Request, res: Response) => {
+    const validation = requestVideoTranslationSchema.safeParse(req.body)
+    if (!validation.success) return res.status(httpStatusCode.BAD_REQUEST).json({ success: false, message: formatZodErrors(validation.error) });
+
+    const session = await mongoose.startSession();
+    try {
+        await session.startTransaction();
+        const payload = { id: req.params.id, ...req.body };
+        const response = await translateVideoService(payload, res, session);
         return res.status(httpStatusCode.OK).json(response);
     } catch (error) {
         const { code, message } = errorParser(error)

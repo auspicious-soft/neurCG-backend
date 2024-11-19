@@ -115,3 +115,42 @@ export const flaskAudioToVideo = async (payload: any, res: Response) => {
         return errorResponseHandler("An error occurred during the API call in flaskAudioToVideo", httpStatusCode.INTERNAL_SERVER_ERROR, res);
     }
 }
+
+export const flaskTranslateVideo = async (payload: any, res: Response) => {
+    try {
+        const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string
+        const formData = new FormData()
+        formData.append('video_url', `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${payload.video}`)
+        formData.append('image_url', `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${payload.projectAvatar}`)
+        formData.append('original_text', payload.originalText)
+        formData.append('translated_text', payload.translatedText)
+        formData.append('subtitles', payload.subtitles)
+        formData.append('subtitles_language', payload.subtitlesLanguage)
+        formData.append('duration', payload.duration)
+
+        const response = await axios.post(`${flaskUrl}/video-translation`, formData, {
+            timeout: 25000, responseType: 'arraybuffer',
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        })
+        if (!response.data || !(response.data.length > 0)) {
+            throw new Error('Empty or invalid video response from Flask API');
+        }
+        // Use the response data directly as a buffer
+        const videoBuffer = Buffer.from(response.data)
+        const videoFileName = `video_${Date.now()}.mp4`
+
+
+        const signedUrl = await generateSignedUrlToUploadOn(videoFileName, 'video/mp4', payload.email)
+        await axios.put(signedUrl, videoBuffer, {
+            headers: {
+                'Content-Type': 'video/mp4'
+            }
+        })
+        const s3Url = `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/projects/${payload.email}/my-projects/${videoFileName}`;
+        return s3Url
+    } catch (error) {
+        return errorResponseHandler("An error occurred during the API call in flaskTranslateVideo", httpStatusCode.INTERNAL_SERVER_ERROR, res);
+    }
+}

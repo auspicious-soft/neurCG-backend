@@ -4,7 +4,7 @@ import { upload } from "../configF/multer";
 import { checkMulter } from "../lib/errors/error-response-handler"
 import { login, signup, forgotPassword, verifyOtpPasswordReset, newPassswordAfterOTPVerified, passwordReset, getUserInfo, editUserInfo } from "../controllers/user/user";
 import { getAllNotificationsOfUser, markAllNotificationsAsRead } from "src/controllers/notifications/notifications";
-import { getUserProjects, convertTextToVideo, convertAudioToVideo } from "src/controllers/projects/projects";
+import { getUserProjects, convertTextToVideo, convertAudioToVideo, translateVideo } from "src/controllers/projects/projects";
 import { buyPlan, cancelSubscription, updateUserCreditsAfterSuccessPayment } from "src/controllers/plans/plans";
 import { checkAuth } from "src/middleware/check-auth";
 import { getAvatar } from "src/controllers/admin/avatar";
@@ -27,6 +27,7 @@ router.route("/:id/notifications").get(checkAuth, getAllNotificationsOfUser).put
 router.get("/:id/projects", checkAuth, getUserProjects)
 router.post("/:id/text-to-video", checkAuth, convertTextToVideo)
 router.post("/:id/audio-to-video", checkAuth, convertAudioToVideo)
+router.post("/:id/video-translation", checkAuth, translateVideo)
 
 //Payments
 router.post('/:id/buy-plan', checkAuth, buyPlan);
