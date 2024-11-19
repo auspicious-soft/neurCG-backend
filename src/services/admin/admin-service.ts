@@ -44,7 +44,7 @@ export const loginService = async (payload: loginInterface, res: Response) => {
     //     domain: "24-x7-fx-admin-frontend.vercel.app",
     //     maxAge: 30  24  60  60  1000
     // })
-    return { success: true, message: "Admin Login successfull", data: tokenPayload } 
+    return { success: true, message: "Admin Login successfull", data: tokenPayload }
 }
 
 export const forgotPasswordService = async (email: string, res: Response) => {
@@ -54,7 +54,7 @@ export const forgotPasswordService = async (email: string, res: Response) => {
     if (passwordResetToken !== null) {
         await sendPasswordResetEmail(email, passwordResetToken.token)
         return { success: true, message: "Password reset email sent with otp" }
-    }
+    } 
 }
 
 export const newPassswordAfterOTPVerifiedService = async (payload: { password: string, otp: string }, res: Response, session: mongoose.mongo.ClientSession) => {
@@ -206,23 +206,23 @@ export const getDashboardStatsService = async (payload: any, res: Response) => {
     const newUsersData = await usersModel.find({ createdAt: { $gte: sevenDaysAgo } }).select("-__v")
     const userData = await usersModel.aggregate([
         {
-          $match: {
-            createdAt: {
-              $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 1, new Date().getMonth(), 1)),
-              $lte: new Date(new Date().setHours(23, 59, 59, 999))
+            $match: {
+                createdAt: {
+                    $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 1, new Date().getMonth(), 1)),
+                    $lte: new Date(new Date().setHours(23, 59, 59, 999))
+                }
             }
-          }
         },
         {
-          $group: {
-            _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
-            userCount: { $sum: 1 }
-          }
+            $group: {
+                _id: { $dateToString: { format: "%Y-%m", date: "$createdAt" } },
+                userCount: { $sum: 1 }
+            }
         },
         {
-          $sort: { _id: -1 }
+            $sort: { _id: -1 }
         }
-      ]);   
+    ]);
     const userMap = new Map(last12Months.map(month => [month, 0]));
     userData.forEach(item => {
         userMap.set(item._id, item.userCount);
@@ -239,7 +239,7 @@ export const getDashboardStatsService = async (payload: any, res: Response) => {
             incomeData: {
                 months: formattedIncomeData.map(item => item.month),
                 income: formattedIncomeData.map(item => item.totalIncome)
-            },  
+            },
             usersGrowth: {
                 months: formattedUserData.map(item => item.month),
                 count: formattedUserData.map(item => item.userCount)
