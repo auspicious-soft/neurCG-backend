@@ -105,6 +105,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     })
     if (existingEvent) { 
         // console.log(`Event ${event.id} or session with idempotency key ${idempotentKey} has already been processed.`);
+        await IdempotencyKeyModel.findByIdAndUpdate(existingEvent._id, { $set: { processed: true, processedAt: new Date() } })
         return { success: true, message: 'Event already processed' };
     }
     if (event.id) {
