@@ -58,7 +58,7 @@ export const flaskTextToVideo = async (payload: any, res: Response) => {
                 'Content-Type': 'multipart/form-data',
             }
         })
-        if (!response.data || !(response.data.length > 0)) {
+        if (!response.data || !(response.data.length > 0)) { 
             throw new Error('Empty or invalid video response from Flask API');
         }
         // Use the response data directly as a buffer
