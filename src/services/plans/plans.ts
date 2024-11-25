@@ -36,7 +36,7 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
             unitAmount = originalAmount - discount
         }
         const session = await stripe.checkout.sessions.create({
-            payment_method_types: ['card'],
+            // payment_method_types: ['card', 'amazon_pay'],
             line_items: [{
                 // price: priceId,  either this or the below price_data
                 quantity: 1,
