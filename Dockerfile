@@ -1,3 +1,14 @@
+##############################################################################
+# This file is used to build the Docker image for the backend service.
+# It includes the following steps:
+# 1. Use a Node.js base image
+# 2. Set the working directory inside the container
+# 3. Copy package.json and install dependencies
+# 4. Copy the rest of the application code
+# 5. Expose the port the app runs on
+# 6. Run the app using ts-node (point to the .ts entry file)
+##############################################################################
+
 # Step 1: Use a Node.js base image
 FROM node:18-alpine
 
