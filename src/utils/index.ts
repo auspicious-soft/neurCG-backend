@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import axios from "axios"
 import { configDotenv } from "dotenv"
 import { Request, Response } from "express"
@@ -44,7 +45,17 @@ export const flaskTextToVideo = async (payload: any, res: Response) => {
     try {
         const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string
         const formData = new FormData()
-        formData.append('image_url', `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${payload.projectAvatar}`)
+
+        // Dynamically concatenate all form data fields
+        const formDataString = Object.entries(payload)
+            .map(([key, value]) => `${key}=${value}`)
+            .join('&');
+        const textHexCode = crypto.createHash('md5').update(formDataString).digest('hex');
+        const videoFileName = `video_${textHexCode}.mp4`
+
+        formData.append('image_name', payload.projectAvatar)
+        formData.append('user_name', payload.email)
+        formData.append('video_file_name', videoFileName)
         formData.append('text', payload.text)
         formData.append('text_language', payload.textLanguage)
         formData.append('preferred_voice', payload.preferredVoice)
@@ -53,29 +64,24 @@ export const flaskTextToVideo = async (payload: any, res: Response) => {
         formData.append('duration', payload.duration)
         const response = await axios.post(`${flaskUrl}/text-to-video`, formData, {
             timeout: 25000,
-            responseType: 'arraybuffer',
             headers: {
                 'Content-Type': 'multipart/form-data',
-            }
-        })
-        if (!response.data || !(response.data.length > 0)) { 
-            throw new Error('Empty or invalid video response from Flask API');
+            },
+            responseType: 'arraybuffer', // Treat the response as a byte array
+        });
+
+        // Convert byte array to string
+        const responseData = JSON.parse(Buffer.from(response.data).toString('utf8'));
+
+        if (!responseData.success) {
+            throw new Error(responseData.message || 'Failed to create video');
         }
-        // Use the response data directly as a buffer
-        const videoBuffer = Buffer.from(response.data)
-        const videoFileName = `video_${Date.now()}.mp4`
 
-
-        const signedUrl = await generateSignedUrlToUploadOn(videoFileName, 'video/mp4', payload.email)
-        await axios.put(signedUrl, videoBuffer, {
-            headers: {
-                'Content-Type': 'video/mp4'
-            }
-        })
-        const s3Url = `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/projects/${payload.email}/my-projects/${videoFileName}`;
-        return s3Url
+        const flask_get_video_url = `${flaskUrl}/${payload.email}/videos/${videoFileName}`;
+        return flask_get_video_url
     } catch (error) {
-        return errorResponseHandler("An error occurred during the API call in flaskTextToVideo", httpStatusCode.INTERNAL_SERVER_ERROR, res);
+        return errorResponseHandler("An error occurred during the API call in flaskTextToVideo",
+            httpStatusCode.INTERNAL_SERVER_ERROR, res);
     }
 }
 
