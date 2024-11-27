@@ -64,21 +64,16 @@ export const flaskTextToVideo = async (payload: any, res: Response) => {
         formData.append('duration', payload.duration)
         const response = await axios.post(`${flaskUrl}/text-to-video`, formData, {
             timeout: 25000,
+            responseType: 'arraybuffer',
             headers: {
                 'Content-Type': 'multipart/form-data',
-            },
-            responseType: 'arraybuffer', // Treat the response as a byte array
-        });
-
-        // Convert byte array to string
-        const responseData = JSON.parse(Buffer.from(response.data).toString('utf8'));
-
-        if (!responseData.success) {
-            throw new Error(responseData.message || 'Failed to create video');
+            }
+        })
+        if (!response.data || !(response.data.length > 0)) {
+            throw new Error('Empty or invalid video response from Flask API');
         }
 
-        const flask_get_video_url = `${flaskUrl}/${payload.email}/videos/${videoFileName}`;
-        return flask_get_video_url
+        return response.data; // Send raw binary data
     } catch (error) {
         return errorResponseHandler("An error occurred during the API call in flaskTextToVideo",
             httpStatusCode.INTERNAL_SERVER_ERROR, res);
