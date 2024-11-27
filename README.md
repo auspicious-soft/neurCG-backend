@@ -140,7 +140,7 @@ npm run dev
 │   │              ├── mail.ts  -->  Send email functions
 │   │              ├── token.ts -->  Token generated functions
 │   │              ├── templates/
-│   │                      ├── forgot-password-reset.ts -->  Forgot password reset email template
+│   │                      ├── forgot-password-reset.ts -->  Forgot password reset email 
 │   │
 │   ├────  services/
 │   │       ├── admin/
