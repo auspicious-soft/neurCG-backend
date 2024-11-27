@@ -48,7 +48,7 @@ export const flaskTextToVideo = async (payload: any, res: Response) => {
 
         // Dynamically concatenate all form data fields
         const formDataString = Object.entries(payload)
-            .map(([key, value]) => `${key}=${value}`)
+            .map(([key, value]) => `${key}=${value !== undefined && value !== null ? value : ''}`)
             .join('&');
         const textHexCode = crypto.createHash('md5').update(formDataString).digest('hex');
         const videoFileName = `video_${textHexCode}.mp4`
@@ -83,12 +83,23 @@ export const flaskTextToVideo = async (payload: any, res: Response) => {
 export const flaskAudioToVideo = async (payload: any, res: Response) => {
     try {
         const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string
+
+        // Dynamically concatenate all form data fields
+        const formDataString = Object.entries(payload)
+            .map(([key, value]) => `${key}=${value !== undefined && value !== null ? value : ''}`)
+            .join('&');
+
+        const textHexCode = crypto.createHash('md5').update(formDataString).digest('hex');
+        const videoFileName = `video_${textHexCode}.mp4`
+
         const formData = new FormData()
-        formData.append('image_url', `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${payload.projectAvatar}`)
-        formData.append('audio_url', `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${payload.audio}`)
+        formData.append('image_name', payload.projectAvatar)
+        formData.append('user_name', payload.email)
+        formData.append('audio_name', payload.audio)
         formData.append('subtitles', payload.subtitles)
         formData.append('subtitles_language', payload.subtitlesLanguage)
         formData.append('duration', payload.duration)
+        formData.append('video_file_name', videoFileName)
 
         const response = await axios.post(`${flaskUrl}/audio-to-video`, formData, {
             timeout: 25000, responseType: 'arraybuffer',
@@ -99,19 +110,8 @@ export const flaskAudioToVideo = async (payload: any, res: Response) => {
         if (!response.data || !(response.data.length > 0)) {
             throw new Error('Empty or invalid video response from Flask API');
         }
-        // Use the response data directly as a buffer
-        const videoBuffer = Buffer.from(response.data)
-        const videoFileName = `video_${Date.now()}.mp4`
+        return response.data; // Send raw binary data
 
-
-        const signedUrl = await generateSignedUrlToUploadOn(videoFileName, 'video/mp4', payload.email)
-        await axios.put(signedUrl, videoBuffer, {
-            headers: {
-                'Content-Type': 'video/mp4'
-            }
-        })
-        const s3Url = `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/projects/${payload.email}/my-projects/${videoFileName}`;
-        return s3Url
     } catch (error) {
         return errorResponseHandler("An error occurred during the API call in flaskAudioToVideo", httpStatusCode.INTERNAL_SERVER_ERROR, res);
     }
