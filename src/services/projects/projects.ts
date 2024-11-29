@@ -51,6 +51,18 @@ export const getUserProjectsService = async (payload: any, res: Response) => {
     }
 }
 
+export const deleteProjectService = async (payload: any, res: Response, session: mongoose.ClientSession) => {
+    const { id } = payload;
+    const project = await projectsModel.findById(id).session(session);
+    if (!project) return errorResponseHandler("Project not found", httpStatusCode.NOT_FOUND, res);
+    const response = await projectsModel.findByIdAndDelete(id)
+    return {
+        success: true,
+        message: "Project deleted successfully",
+        data: response
+    }
+}
+
 export const convertTextToVideoService = async (payload: any, res: Response, session: mongoose.ClientSession) => {
     const { id, ...rest } = payload;
 

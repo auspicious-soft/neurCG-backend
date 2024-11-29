@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { httpStatusCode } from "src/lib/constant";
 import { errorParser } from "src/lib/errors/error-response-handler";
-import { getUserProjectsService, convertTextToVideoService, convertaAudioToVideoService, translateVideoService } from "src/services/projects/projects";
+import { getUserProjectsService, convertTextToVideoService, convertaAudioToVideoService, translateVideoService, deleteProjectService } from "src/services/projects/projects";
 import { requestAudioToVideoSchema, requestTextToVideoSchema, requestVideoTranslationSchema } from "src/validation/client-user";
 import { formatZodErrors } from "src/validation/format-zod-errors";
 
@@ -12,6 +12,20 @@ export const getUserProjects = async (req: Request, res: Response) => {
         return res.status(response.total > 0 ? httpStatusCode.OK : httpStatusCode.NO_CONTENT).json(response)
     }
     catch (error: any) {
+        const { code, message } = errorParser(error)
+        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" })
+    }
+}
+
+
+export const deleteProject = async (req: Request, res: Response) => {
+    const session = await mongoose.startSession();
+    try {
+        await session.startTransaction();
+        const payload = { id: req.params.id, ...req.body };
+        const response = await deleteProjectService(payload, res, session);
+        return res.status(httpStatusCode.OK).json(response);
+    } catch (error) {
         const { code, message } = errorParser(error)
         return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" })
     }
