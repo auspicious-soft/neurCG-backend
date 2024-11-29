@@ -10,6 +10,7 @@ import {
     getAllUsers,
     getAUser,
     getIncomeData,
+    deleteAUser,
     //  updateDashboardStats
 } from "../controllers/admin/admin";
 // import { checkAdminAuth } from "../middleware/check-auth";
@@ -35,7 +36,7 @@ router.post("/send-latest-updates", checkAuth, sendLatestUpdates)
 router.post("/send-notification", checkAuth, sendNotificationToUsers)
 router.post("/send-notification-to-specific-users", checkAuth, sendNotificationToUser)
 router.get("/users", checkAuth, getAllUsers)
-router.get("/users/:id", checkAuth, getAUser)
+router.route("/users/:id").get(checkAuth, getAUser).delete(checkAuth, deleteAUser)
 router.get("/dashboard", checkAuth, getDashboardStats)
 
 router.post("/avatars",checkAuth, postAvatar)

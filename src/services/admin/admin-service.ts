@@ -141,6 +141,26 @@ export const getAUserService = async (id: string, res: Response) => {
     };
 }
 
+export const deleteAUserService = async (id: string, res: Response) => {
+    const user = await usersModel.findById(id);
+    if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res);
+
+    // Delete user projects ----
+    const userProjects = await projectsModel.deleteMany({ userId: id })
+
+    // Delete user ----
+    await usersModel.findByIdAndDelete(id)
+
+    return {
+        success: true,
+        message: "User deleted successfully",
+        data: {
+            user,
+            projects: userProjects
+        }
+    }
+}
+
 export const sendLatestUpdatesService = async (payload: any, res: Response) => {
     const { message, title } = payload;
 
