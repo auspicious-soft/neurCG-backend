@@ -33,7 +33,7 @@ const usersSchema = new mongoose.Schema({
     city: { type: String },
     state: { type: String },
     homeAddress: { type: String },
-    creditsLeft: { type: Number, default: 3 },
+    creditsLeft: { type: Number, default: 24 },
     planType: { type: String, default: "free" },
     stripeCustomerId: { type: String },
     planOrSubscriptionId: { type: String, default: null },
