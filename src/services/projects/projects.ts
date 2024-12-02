@@ -26,9 +26,9 @@ export const getUserProjectsService = async (payload: any, res: Response) => {
 
     const sevenDaysAgo = new Date(new Date().setDate(new Date().getDate() - 7))  // alternate is import { subDays } from 'date-fns'; const sevenDaysAgo = subDays(new Date(), 7);
     // this week results
-    const recentProjects = await projectsModel.find({ createdAt: { $gte: sevenDaysAgo } }).select("-__v")
+    const recentProjects = await projectsModel.find({ userId: id, createdAt: { $gte: sevenDaysAgo } }).select("-__v")
     // old  results
-    const oldProjects = await projectsModel.find({ createdAt: { $lt: sevenDaysAgo } }).select("-__v")
+    const oldProjects = await projectsModel.find({ userId: id, createdAt: { $lt: sevenDaysAgo } }).select("-__v")
 
     if (results.length) return {
         // pageInt,
@@ -63,7 +63,7 @@ export const deleteProjectService = async (payload: any, res: Response, session:
     }
 }
 
-export const convertTextToVideoService = async (payload: any, res: Response, 
+export const convertTextToVideoService = async (payload: any, res: Response,
     // session: mongoose.ClientSession
 
 ) => {
@@ -100,9 +100,10 @@ export const convertTextToVideoService = async (payload: any, res: Response,
         );
 
         // Update user credits
-        const updatedUser = await usersModel.findByIdAndUpdate(id, { $inc: { creditsLeft: -creditsExhausted } }, { new: true, 
+        const updatedUser = await usersModel.findByIdAndUpdate(id, { $inc: { creditsLeft: -creditsExhausted } }, {
+            new: true,
             // session
-         });
+        });
 
         if (!updatedUser) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res);
 
