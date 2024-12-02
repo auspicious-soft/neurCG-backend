@@ -3,7 +3,7 @@ import mongoose, { Schema } from "mongoose"
 const usersSchema = new mongoose.Schema({
     identifier: {
         type: String,
-        required: true,
+        // required: true,
         unique: true
     },
     firstName: {
@@ -49,7 +49,8 @@ const usersSchema = new mongoose.Schema({
     },
     referredCount: { type: Number, default: 0 },
     referralBonusPoints: { type: Number, default: 0 },
-    referralEarnings: { type: Number, default: 0 }
+    referralEarnings: { type: Number, default: 0 },
+    lastLoggedIn: { type: Date },
 }, { timestamps: true })
 
 export const usersModel = mongoose.model("users", usersSchema)
