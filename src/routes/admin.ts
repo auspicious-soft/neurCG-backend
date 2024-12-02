@@ -11,6 +11,7 @@ import {
     getAUser,
     getIncomeData,
     deleteAUser,
+    addCreditsManually,
     //  updateDashboardStats
 } from "../controllers/admin/admin";
 // import { checkAdminAuth } from "../middleware/check-auth";
@@ -35,15 +36,17 @@ router.patch("/new-password-otp-verified", newPassswordAfterOTPVerified)
 router.post("/send-latest-updates", checkAuth, sendLatestUpdates)
 router.post("/send-notification", checkAuth, sendNotificationToUsers)
 router.post("/send-notification-to-specific-users", checkAuth, sendNotificationToUser)
+router.get("/dashboard", checkAuth, getDashboardStats)
 router.get("/users", checkAuth, getAllUsers)
 router.route("/users/:id").get(checkAuth, getAUser).delete(checkAuth, deleteAUser)
-router.get("/dashboard", checkAuth, getDashboardStats)
+router.post("/users/add-credit/:id", checkAuth, addCreditsManually)
+router.get("/income", checkAuth, getIncomeData)
+
 
 router.post("/avatars",checkAuth, postAvatar)
 router.get("/avatars", checkAuth, getAvatar)
 router.delete("/avatars/:id", checkAuth, deleteAvatar)
 
-router.get("/income", checkAuth, getIncomeData)
 
 // router.get("/verify-session", verifySession);
 // router.patch("/update-password", passwordReset)

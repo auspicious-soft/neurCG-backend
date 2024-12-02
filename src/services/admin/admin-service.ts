@@ -141,6 +141,18 @@ export const getAUserService = async (id: string, res: Response) => {
     };
 }
 
+
+export const addCreditsManuallyService = async (id: string, amount: number, res: Response) => {
+    const user = await usersModel.findById(id);
+    if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res);
+    const updatedUser = await usersModel.findByIdAndUpdate(id, { $inc: { creditsLeft: amount } }, { new: true })
+    return {
+        success: true,
+        message: "Credits added successfully",
+        data: updatedUser
+    }
+}
+
 export const deleteAUserService = async (id: string, res: Response) => {
     const user = await usersModel.findById(id);
     if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res);

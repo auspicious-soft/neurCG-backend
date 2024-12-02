@@ -3,7 +3,6 @@ import { Response } from "express";
 import { httpStatusCode } from "../constant";
 
 export const errorResponseHandler = (message: string, code: number = 500, res: Response) => {
-    console.log('message in handler: ', message);
     throw new Error(JSON.stringify({
         success: false,
         message,
@@ -12,7 +11,6 @@ export const errorResponseHandler = (message: string, code: number = 500, res: R
 }
 
 export const errorParser = (error: any) => {
-    console.log('error in parser--> ', error);
     try {
         return JSON.parse(error.message);
     } catch (e) {
