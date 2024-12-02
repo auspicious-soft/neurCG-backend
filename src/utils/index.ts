@@ -52,10 +52,10 @@ export const flaskTextToVideo = async (payload: any, res: Response) => {
         formData.append('subtitles_language', payload.subtitlesLanguage)
         formData.append('duration', payload.duration)
         const response = await axios.post(`${flaskUrl}/text-to-video`, formData, {
-            timeout: 25000,
+            timeout: 60000,
             responseType: 'arraybuffer',
             headers: {
-                'Content-Type': 'multipart/form-data',
+            'Content-Type': 'multipart/form-data',
             }
         })
         if (!response.data || !(response.data.length > 0)) { 
