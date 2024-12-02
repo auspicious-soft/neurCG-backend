@@ -52,7 +52,7 @@ export const flaskTextToVideo = async (payload: any, res: Response) => {
         formData.append('subtitles_language', payload.subtitlesLanguage)
         formData.append('duration', payload.duration)
         const response = await axios.post(`${flaskUrl}/text-to-video`, formData, {
-            timeout: 120000,
+            timeout: 600000,
             responseType: 'arraybuffer',
             headers: {
             'Content-Type': 'multipart/form-data',
@@ -90,7 +90,7 @@ export const flaskAudioToVideo = async (payload: any, res: Response) => {
         formData.append('duration', payload.duration)
 
         const response = await axios.post(`${flaskUrl}/audio-to-video`, formData, {
-            timeout: 25000, responseType: 'arraybuffer',
+            timeout: 600000, responseType: 'arraybuffer',
             headers: {
                 'Content-Type': 'multipart/form-data',
             }
@@ -130,7 +130,7 @@ export const flaskTranslateVideo = async (payload: any, res: Response) => {
         formData.append('duration', payload.duration)
 
         const response = await axios.post(`${flaskUrl}/video-translation`, formData, {
-            timeout: 25000, responseType: 'arraybuffer',
+            timeout: 600000, responseType: 'arraybuffer',
             headers: {
                 'Content-Type': 'multipart/form-data',
             }
