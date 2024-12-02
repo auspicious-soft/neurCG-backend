@@ -63,10 +63,13 @@ export const deleteProjectService = async (payload: any, res: Response, session:
     }
 }
 
-export const convertTextToVideoService = async (payload: any, res: Response, session: mongoose.ClientSession) => {
+export const convertTextToVideoService = async (payload: any, res: Response, 
+    // session: mongoose.ClientSession
+
+) => {
     const { id, ...rest } = payload;
 
-    const user = await usersModel.findById(id).session(session);
+    const user = await usersModel.findById(id)
     if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res);
 
     const WORDS_PER_MINUTE = 150;
@@ -92,15 +95,19 @@ export const convertTextToVideoService = async (payload: any, res: Response, ses
             subtitlesLanguage: rest.subtitlesLanguage,
             duration: videoLengthSeconds
         })
-        await newProject.save({ session });
+        await newProject.save(
+            // { session }
+        );
 
         // Update user credits
-        const updatedUser = await usersModel.findByIdAndUpdate(id, { $inc: { creditsLeft: -creditsExhausted } }, { new: true, session });
+        const updatedUser = await usersModel.findByIdAndUpdate(id, { $inc: { creditsLeft: -creditsExhausted } }, { new: true, 
+            // session
+         });
 
         if (!updatedUser) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res);
 
         // Commit transaction here
-        await session.commitTransaction()
+        // await session.commitTransaction()
         return {
             success: true,
             message: "Text converted to video successfully",
@@ -113,7 +120,7 @@ export const convertTextToVideoService = async (payload: any, res: Response, ses
         }
     }
     else {
-        await session.abortTransaction(); // Rollback if video conversion fails
+        // await session.abortTransaction(); // Rollback if video conversion fails
         return errorResponseHandler("An error occurred during the API call", httpStatusCode.INTERNAL_SERVER_ERROR, res);
     }
 }

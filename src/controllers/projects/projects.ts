@@ -35,17 +35,19 @@ export const convertTextToVideo = async (req: Request, res: Response) => {
     const validation = requestTextToVideoSchema.safeParse(req.body)
     if (!validation.success) return res.status(httpStatusCode.BAD_REQUEST).json({ success: false, message: formatZodErrors(validation.error) });
 
-    const session = await mongoose.startSession();
+    // const session = await mongoose.startSession();
     try {
-        await session.startTransaction();
+        // await session.startTransaction();
         const payload = { id: req.params.id, ...req.body };
-        const response = await convertTextToVideoService(payload, res, session);
+        const response = await convertTextToVideoService(payload, res, 
+            // session
+        );
         return res.status(httpStatusCode.OK).json(response);
     } catch (error) {
         const { code, message } = errorParser(error)
         return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" })
     } finally {
-        await session.endSession();
+        // await session.endSession();
     }
 }
 
