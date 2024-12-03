@@ -114,6 +114,16 @@ export const getUserInfoService = async (id: string, res: Response) => {
     }
 }
 
+export const getUserInfoByEmailService = async (email: string, res: Response) => {
+    const client = await usersModel.findOne({ email })
+    if (!client) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
+    return {
+        success: true,
+        message: "Client info fetched successfully",
+        data: client
+    }
+}
+
 export const editUserInfoService = async (payload: any, res: Response) => {
     const { id } = payload
     const client = await usersModel.findById(id)

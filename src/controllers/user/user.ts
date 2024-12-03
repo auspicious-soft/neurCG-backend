@@ -3,7 +3,7 @@ import { httpStatusCode } from "../../lib/constant"
 import { errorParser } from "../../lib/errors/error-response-handler"
 import { clientEditSchema, clientSignupSchema, passswordResetSchema } from "../../validation/client-user"
 import { formatZodErrors } from "../../validation/format-zod-errors"
-import { loginService, signupService, forgotPasswordService, newPassswordAfterOTPVerifiedService, passwordResetService, getUserInfoService, editUserInfoService, verifyOtpPasswordResetService } from "../../services/user/user"
+import { loginService, signupService, forgotPasswordService, newPassswordAfterOTPVerifiedService, passwordResetService, getUserInfoService, getUserInfoByEmailService, editUserInfoService, verifyOtpPasswordResetService } from "../../services/user/user"
 import { z } from "zod"
 import mongoose from "mongoose"
 import { adminUserLoginSchema } from "src/validation/admin-user"
@@ -91,6 +91,16 @@ export const passwordReset = async (req: Request, res: Response) => {
 export const getUserInfo = async (req: Request, res: Response) => {
     try {
         const response = await getUserInfoService(req.params.id, res)
+        return res.status(httpStatusCode.OK).json(response)
+    } catch (error: any) {
+        const { code, message } = errorParser(error)
+        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" });
+    }
+}
+
+export const getUserInfoByEmail = async (req: Request, res: Response) => {
+    try {
+        const response = await getUserInfoByEmailService(req.params.email, res)
         return res.status(httpStatusCode.OK).json(response)
     } catch (error: any) {
         const { code, message } = errorParser(error)

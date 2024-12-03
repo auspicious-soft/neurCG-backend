@@ -1,8 +1,6 @@
 import { Router } from "express";
 import express from "express";
-import { upload } from "../configF/multer";
-import { checkMulter } from "../lib/errors/error-response-handler"
-import { login, signup, forgotPassword, verifyOtpPasswordReset, newPassswordAfterOTPVerified, passwordReset, getUserInfo, editUserInfo } from "../controllers/user/user";
+import { login, signup, forgotPassword, verifyOtpPasswordReset, newPassswordAfterOTPVerified, passwordReset, getUserInfo, editUserInfo, getUserInfoByEmail } from "../controllers/user/user";
 import { getAllNotificationsOfUser, markAllNotificationsAsRead } from "src/controllers/notifications/notifications";
 import { getUserProjects, convertTextToVideo, convertAudioToVideo, translateVideo, deleteProject } from "src/controllers/projects/projects";
 import { buyPlan, cancelSubscription, updateUserCreditsAfterSuccessPayment } from "src/controllers/plans/plans";
@@ -23,6 +21,7 @@ router.get('/avatars', checkAuth, getAvatar)
 
 router.route("/:id").get(checkAuth, getUserInfo).put(checkAuth, editUserInfo)
 router.route("/:id/notifications").get(checkAuth, getAllNotificationsOfUser).put(checkAuth, markAllNotificationsAsRead)
+router.get("/email/:email", checkAuth, getUserInfoByEmail)
 
 router.get("/:id/projects", checkAuth, getUserProjects)
 router.post("/:id/text-to-video", checkAuth, convertTextToVideo)
