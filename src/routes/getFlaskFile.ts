@@ -5,7 +5,7 @@ const router = Router();
 configDotenv()
 
 router.post("/", async (req: Request, res: Response) => {
-    const { subpath } = req.params
+    const { subpath } = req.body
     const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string
     try {
         const formData = new FormData()

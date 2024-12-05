@@ -49,6 +49,6 @@ app.get("/", (_, res: any) => {
 app.use("/api/admin", checkValidAdminRole, admin);
 app.use("/api/user", user);
 app.use("/api/landing", landing)
-app.use("/api/file/:subpath", getFlaskFile)
+app.use("/api/file", getFlaskFile)
 
 app.listen(PORT, () => console.log(`Server is listening on port ${PORT}`));
