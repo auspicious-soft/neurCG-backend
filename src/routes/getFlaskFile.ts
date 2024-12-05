@@ -26,6 +26,7 @@ router.post("/", async (req: Request, res: Response) => {
         // Determine the content type based on the file extension
         const contentType = response.headers['content-type'] || 'application/octet-stream';
         res.set('Content-Type', contentType)
+        console.log('fileBuffer: ', fileBuffer);
         res.send(fileBuffer)
 
     } catch (error) {
