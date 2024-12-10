@@ -2,10 +2,11 @@ import { z } from "zod";
 
 export const clientSignupSchema = z.object({
     email: z.string().email(),
-    password: z.string().min(6),
+    password: z.string().min(6).optional(),
     firstName: z.string().min(1),
     lastName: z.string().min(1),
     referralCode: z.string().optional(),
+    profilePic: z.string().optional(),
 }).strict({
     message: "Bad payload present in the data"
 });
@@ -13,12 +14,12 @@ export const clientSignupSchema = z.object({
 export const clientEditSchema = z.object({
     firstName: z.string().min(1),
     lastName: z.string().min(1),
-    dob: z.string().min(1),
-    city: z.string().min(1),
-    state: z.string().min(1),
-    homeAddress: z.string().min(1),
+    dob: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    homeAddress: z.string().optional(),
     profilePic: z.string().min(1),
-    phoneNumber: z.string().min(1)
+    phoneNumber: z.string().optional()
 }).strict({
     message: "Bad payload present in the data"
 }).partial()

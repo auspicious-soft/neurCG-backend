@@ -15,13 +15,15 @@ import { sendNotificationToUserService } from "../notifications/notifications"
 export const signupService = async (payload: any, res: Response) => {
     const client = await usersModel.findOne({ email: payload.email })
     if (client) return errorResponseHandler("Email already exists", httpStatusCode.BAD_REQUEST, res)
-    const newPassword = bcrypt.hashSync(payload.password, 10)
-    payload.password = newPassword
+    if (payload.password) {
+        const newPassword = bcrypt.hashSync(payload.password, 10)
+        payload.password = newPassword
+    }
     const genId = customAlphabet('1234567890', 8)
     const identifier = customAlphabet('0123456789', 3)
     payload.myReferralCode = `${process.env.NEXT_PUBLIC_APP_URL}/signup?referralCode=${genId()}`
     payload.identifier = identifier()
-    if(payload.referralCode) {
+    if (payload.referralCode) {
         const referredBy = await usersModel.findOne({ myReferralCode: `${process.env.NEXT_PUBLIC_APP_URL}/signup?referralCode=${payload.referralCode}` })
         if (referredBy) {
             payload.referredBy = referredBy._id           //Set my referred by
@@ -29,15 +31,16 @@ export const signupService = async (payload: any, res: Response) => {
             await sendNotificationToUserService({ title: "Referral", message: "Congrats! A new user has signed up with your referral code", ids: [referredBy._id.toString()] }, res)   //Sending THE NOTIFICATION TO THE USER WHO REFERRED ME
         }
     }
-    new usersModel({ ...payload, email: payload.email.toLowerCase().trim() }).save()
-    return { success: true, message: "Client signup successfull" }
+    const newUser =  new usersModel({ ...payload, email: payload.email.toLowerCase().trim() })
+    await newUser.save()
+    return { success: true, message: "Client signup successfull" , data: newUser}
 }
 
 export const loginService = async (payload: any, res: Response) => {
     const { email, password } = payload
     const client = await usersModel.findOne({ email }).select('+password')
     if (!client) return errorResponseHandler("Email not found", httpStatusCode.NOT_FOUND, res)
-    const isPasswordValid = bcrypt.compareSync(password, client.password)
+    const isPasswordValid = bcrypt.compareSync(password, client.password as string)
     if (!isPasswordValid) return errorResponseHandler("Invalid password", httpStatusCode.UNAUTHORIZED, res)
     const clientObject: any = client.toObject()
     delete clientObject.password
@@ -93,7 +96,7 @@ export const passwordResetService = async (req: Request, res: Response) => {
     const getAdmin = await usersModel.findById(req.params.id).select("+password")
     if (!getAdmin) return errorResponseHandler("Admin not found", httpStatusCode.NOT_FOUND, res)
 
-    const passwordMatch = bcrypt.compareSync(currentPassword, getAdmin.password)
+    const passwordMatch = bcrypt.compareSync(currentPassword, getAdmin.password as string)
     if (!passwordMatch) return errorResponseHandler("Current password invalid", httpStatusCode.BAD_REQUEST, res)
     const hashedPassword = bcrypt.hashSync(newPassword, 10)
     const response = await usersModel.findByIdAndUpdate(req.params.id, { password: hashedPassword })
@@ -116,7 +119,10 @@ export const getUserInfoService = async (id: string, res: Response) => {
 
 export const getUserInfoByEmailService = async (email: string, res: Response) => {
     const client = await usersModel.findOne({ email })
-    if (!client) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
+    if (!client) return {
+        success: false,
+        message: "User not found",
+    }
     return {
         success: true,
         message: "Client info fetched successfully",
