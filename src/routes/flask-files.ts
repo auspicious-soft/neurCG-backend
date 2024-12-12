@@ -51,11 +51,12 @@ const upload = multer({
 // Post a file to the Flask
 router.post("/upload", checkAuth, upload.single('file'), checkMulter, async (req: Request, res: Response) => {
     const file = req.file
+    const { subpath } = req.body
     const formData = new FormData()
     if (file) {
         const blob = new Blob([file.buffer], { type: file.mimetype })
-        formData.append("file", blob, file.originalname)
-
+        formData.append("file", blob)          // <--- File to be uploaded, will be named as  --> "file"
+        formData.append("subpath", subpath)    // <--- Path in flask where the file will be saved,  will be named as  --> "subpath"
         try {
 
             const response = await axios.post(`${flaskUrl}/upload-file`, formData, {
