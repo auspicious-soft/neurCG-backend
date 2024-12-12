@@ -4,7 +4,7 @@ import cors from "cors"
 import path from "path"
 import { fileURLToPath } from 'url'
 import connectDB from "./configF/db"
-import { admin, user, landing, getFlaskFile } from "./routes"
+import { admin, user, landing, flaskFiles } from "./routes"
 import { checkValidAdminRole } from "./utils"
 import bodyParser from 'body-parser'
 
@@ -49,6 +49,6 @@ app.get("/", (_, res: any) => {
 app.use("/api/admin", checkValidAdminRole, admin);
 app.use("/api/user", user);
 app.use("/api/landing", landing)
-app.use("/api/file", getFlaskFile)
+app.use("/api/file", flaskFiles)
 
 app.listen(PORT, () => console.log(`Server is listening on port ${PORT}`));
