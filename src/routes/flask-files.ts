@@ -83,7 +83,7 @@ router.post("/upload", checkAuth, upload.single('file'), checkMulter, async (req
 
 
 // Delete a file from the Flask
-router.post("/remove", checkAuth, async (req: Request, res: Response) => {
+router.delete("/remove", checkAuth, async (req: Request, res: Response) => {
     const { subpath } = req.body
     try {
         const formData = new FormData()
