@@ -8,10 +8,8 @@ import { checkAuth } from "src/middleware/check-auth";
 const router = Router()
 configDotenv()
 
-const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string;
 // Get a file from the Flask 
 router.post("/", checkAuth, getFile)
-
 
 const storage = multer.memoryStorage()
 const upload = multer({
@@ -21,10 +19,8 @@ const upload = multer({
         files: 1,
     }
 })
-
 // Post a file to the Flask
 router.post("/upload", checkAuth, upload.single('file'), checkMulter, uploadFile)
-
 
 // Delete a file from the Flask
 router.delete("/remove", checkAuth, deleteFile)
