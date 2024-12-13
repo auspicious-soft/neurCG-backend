@@ -5,6 +5,7 @@ export const getFile = async (req: Request, res: Response) => {
     const { subpath } = req.body;
     try {
         const response = await getFileService(subpath);
+        console.log('response: ', response);
         if (!response.data || !(response.data.length > 0)) {
             throw new Error('Empty or invalid file response from Flask API');
         }
