@@ -1,10 +1,10 @@
-import axios from "axios";
-import { configDotenv } from "dotenv";
-import { Request, Response, Router } from "express";
 import multer from "multer";
-import { deleteFile, getFile, uploadFile } from "src/controllers/flask-file-controllers";
-import { checkMulter } from "src/lib/errors/error-response-handler";
+import { Router } from "express";
+import { configDotenv } from "dotenv";
 import { checkAuth } from "src/middleware/check-auth";
+import { checkMulter } from "src/lib/errors/error-response-handler";
+import { deleteFile, getFile, uploadFile } from "src/controllers/flask-file-controllers";
+
 const router = Router()
 configDotenv()
 
