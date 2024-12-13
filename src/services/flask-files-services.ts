@@ -18,6 +18,7 @@ export const getFileService = async (subpath: string) => {
 };
 
 export const uploadFileService = async (file: Express.Multer.File, subpath: string, name?: string) => {
+    console.log('file: ', file);
     const formData = new FormData();
     const blob = new Blob([file.buffer], { type: file.mimetype });
     formData.append("file", blob);
