@@ -13,7 +13,6 @@ export const getFile = async (req: Request, res: Response) => {
         res.set('Content-Type', contentType);
         res.send(fileBuffer);
     } catch (error) {
-        console.log(error);
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
@@ -29,7 +28,6 @@ export const uploadFile = async (req: Request, res: Response) => {
             }
             res.status(200).json({ success: true, message: "File uploaded successfully" });
         } catch (error) {
-            console.log(error);
             return res.status(500).json({ success: false, message: "Internal Server Error" });
         }
     } else {
@@ -46,7 +44,6 @@ export const deleteFile = async (req: Request, res: Response) => {
         }
         res.status(200).json({ success: true, message: "File deleted successfully" });
     } catch (error) {
-        console.log(error);
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };

@@ -11,7 +11,6 @@ export const errorResponseHandler = (message: string, code: number = 500, res: R
 }
 
 export const errorParser = (error: any) => {
-    console.log('error: ', error);
     try {
         return JSON.parse(error.message);
     } catch (e) {
