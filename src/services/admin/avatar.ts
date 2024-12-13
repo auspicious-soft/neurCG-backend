@@ -3,7 +3,7 @@ import { uploadFile } from "src/controllers/flask-file-controllers";
 import { httpStatusCode } from "src/lib/constant";
 import { errorResponseHandler } from "src/lib/errors/error-response-handler";
 import { avatarModel } from "src/models/admin/avatar-schema";
-import { uploadFileService } from "../flask-files-services";
+import { uploadFileService, deleteFileService } from "../flask-files-services";
 
 export const postAvatarService = async (payload: any, res: Response) => {
     const { avatarUrl, file, name } = payload
@@ -30,6 +30,7 @@ export const getAvatarService = async (res: Response) => {
 export const deleteAvatarService = async (id: string, res: Response) => {
     const avatar = await avatarModel.findById(id)
     if (!avatar) return errorResponseHandler("Avatar not found", httpStatusCode.NOT_FOUND, res)
+    await deleteFileService(avatar.avatarUrl)
     await avatarModel.findByIdAndDelete(id)
     return { success: true, message: "Avatar deleted successfully" }
 }
