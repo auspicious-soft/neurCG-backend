@@ -5,7 +5,6 @@ import { deleteAvatarService, getAvatarService, postAvatarService } from "../../
 
 export const postAvatar = async (req: Request, res: Response) => {
     const { file } = req;
-    console.log('file: ', file);
     try {
         const response = await postAvatarService({ file, ...req.body }, res);
         return res.status(httpStatusCode.CREATED).json(response);
