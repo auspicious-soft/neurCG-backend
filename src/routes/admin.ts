@@ -15,13 +15,13 @@ import {
     //  updateDashboardStats
 } from "../controllers/admin/admin";
 // import { checkAdminAuth } from "../middleware/check-auth";
-import { upload } from "../configF/multer";
 import { checkMulter } from "../lib/errors/error-response-handler"
 import { forgotPassword } from "src/controllers/admin/admin";
 import { verifyOtpPasswordReset } from "src/controllers/user/user";
 import { sendNotificationToUser, sendNotificationToUsers } from "src/controllers/notifications/notifications";
 import { postAvatar, getAvatar, deleteAvatar } from "src/controllers/admin/avatar";
 import { checkAuth } from "src/middleware/check-auth";
+import multer from "multer";
 
 
 
@@ -42,8 +42,16 @@ router.route("/users/:id").get(checkAuth, getAUser).delete(checkAuth, deleteAUse
 router.post("/users/add-credit/:id", checkAuth, addCreditsManually)
 router.get("/income", checkAuth, getIncomeData)
 
+const storage = multer.memoryStorage()
+const upload = multer({
+    storage,
+    limits: {
+        fileSize: 1024 * 1024 * 200, // 200 MB
+        files: 1,
+    }
+})
 
-router.post("/avatars",checkAuth, postAvatar)
+router.post("/avatars", checkAuth, upload.single('file'), checkMulter, postAvatar)
 router.get("/avatars", checkAuth, getAvatar)
 router.delete("/avatars/:id", checkAuth, deleteAvatar)
 

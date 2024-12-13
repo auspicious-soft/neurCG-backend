@@ -1,29 +1,14 @@
-import axios from "axios";
-import { configDotenv } from "dotenv";
 import { Request, Response } from "express";
-import FormData from "form-data";
-
-configDotenv();
-
-const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string;
+import { getFileService, uploadFileService, deleteFileService } from "src/services/flask-files-services";
 
 export const getFile = async (req: Request, res: Response) => {
     const { subpath } = req.body;
     try {
-        const formData = new FormData();
-        formData.append("subpath", subpath);
-
-        const response = await axios.post(`${flaskUrl}/get-file`, formData, {
-            responseType: 'arraybuffer',
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            }
-        });
+        const response = await getFileService(subpath);
         if (!response.data || !(response.data.length > 0)) {
             throw new Error('Empty or invalid file response from Flask API');
         }
         const fileBuffer = Buffer.from(response.data);
-
         const contentType = response.headers['content-type'] || 'application/octet-stream';
         res.set('Content-Type', contentType);
         res.send(fileBuffer);
@@ -36,18 +21,9 @@ export const getFile = async (req: Request, res: Response) => {
 export const uploadFile = async (req: Request, res: Response) => {
     const file = req.file;
     const { subpath } = req.body;
-    const formData = new FormData();
     if (file) {
-        const blob = new Blob([file.buffer], { type: file.mimetype });
-        formData.append("file", blob);
-        formData.append("subpath", subpath);
         try {
-            const response = await axios.post(`${flaskUrl}/upload-file`, formData, {
-                timeout: 600000,
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            const response = await uploadFileService(file, subpath);
             if (response.status !== 200) {
                 throw new Error('Failed to upload file to Flask API');
             }
@@ -64,13 +40,7 @@ export const uploadFile = async (req: Request, res: Response) => {
 export const deleteFile = async (req: Request, res: Response) => {
     const { subpath } = req.body;
     try {
-        const formData = new FormData();
-        formData.append("subpath", subpath);
-        const response = await axios.post(`${flaskUrl}/delete-file`, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
+        const response = await deleteFileService(subpath);
         if (response.status !== 200) {
             throw new Error('Failed to delete file from Flask API');
         }

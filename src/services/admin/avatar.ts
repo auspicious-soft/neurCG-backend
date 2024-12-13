@@ -1,11 +1,13 @@
 import { Response } from "express";
+import { uploadFile } from "src/controllers/flask-file-controllers";
 import { httpStatusCode } from "src/lib/constant";
 import { errorResponseHandler } from "src/lib/errors/error-response-handler";
 import { avatarModel } from "src/models/admin/avatar-schema";
 
 export const postAvatarService = async (payload: any, res: Response) => {
-    const { avatarUrl } = payload
+    const { avatarUrl, file } = payload
     if (!avatarUrl) return errorResponseHandler("Avatar is required", httpStatusCode.BAD_REQUEST, res)
+    const postFileToFlask = await uploadFile
     const addAvatar = new avatarModel(payload)
     await addAvatar.save()
     return { success: true, message: "Avatar added successfully", data: addAvatar }
