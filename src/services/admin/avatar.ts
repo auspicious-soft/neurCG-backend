@@ -7,9 +7,11 @@ import { uploadFileService } from "../flask-files-services";
 
 export const postAvatarService = async (payload: any, res: Response) => {
     const { avatarUrl, file, name } = payload
+
     if (!avatarUrl) return errorResponseHandler("Avatar is required", httpStatusCode.BAD_REQUEST, res)
     if (!Object.keys(file).length) return errorResponseHandler("File is required", httpStatusCode.BAD_REQUEST, res)
     if (!name) return errorResponseHandler("Name is required", httpStatusCode.BAD_REQUEST, res)
+    
     const response = await uploadFileService(file, avatarUrl, name)
     if (response.status !== 200) return errorResponseHandler("Failed to upload file to Flask API", httpStatusCode.INTERNAL_SERVER_ERROR, res)
     const addAvatar = new avatarModel({

@@ -6,13 +6,14 @@ import { deleteAvatarService, getAvatarService, postAvatarService } from "../../
 export const postAvatar = async (req: Request, res: Response) => {
     const { file } = req;
     try {
-      const response = await postAvatarService({ file, ...req.body }, res);
-      return res.status(httpStatusCode.CREATED).json(response);
+        const response = await postAvatarService({ file, ...req.body }, res);
+        return res.status(httpStatusCode.CREATED).json(response);
     } catch (err) {
-      const { code, message } = errorParser(err);
-      return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || 'An error occurred' });
+        const { code, message } = errorParser(err);
+        return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || 'An error occurred' });
     }
-  }
+}
+
 export const getAvatar = async (req: Request, res: Response) => {
     try {
         const response = await getAvatarService(res)
