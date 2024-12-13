@@ -17,12 +17,12 @@ export const getFileService = async (subpath: string) => {
     return response;
 };
 
-export const uploadFileService = async (file: Express.Multer.File, subpath: string) => {
+export const uploadFileService = async (file: Express.Multer.File, subpath: string, name?: string) => {
     const formData = new FormData();
     const blob = new Blob([file.buffer], { type: file.mimetype });
     formData.append("file", blob);
     formData.append("subpath", subpath);
-
+    name && formData.append("name", name);
     const response = await axios.post(`${flaskUrl}/upload-file`, formData, {
         timeout: 600000,
         headers: {
