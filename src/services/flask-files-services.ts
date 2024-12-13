@@ -1,5 +1,4 @@
 import axios from "axios";
-import FormData from "form-data";
 
 const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string;
 
