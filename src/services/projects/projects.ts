@@ -1,14 +1,13 @@
 import { Response } from "express"
 import path from "path"
-import fs from 'fs';
 import { fileURLToPath } from 'url'
-import { deleteFile } from "src/configF/multer"
 import { httpStatusCode } from "src/lib/constant"
 import { errorResponseHandler } from "src/lib/errors/error-response-handler"
 import { projectsModel } from "src/models/user/projects-schema"
 import { usersModel } from "src/models/user/user-schema"
 import { flaskTextToVideo, flaskAudioToVideo, flaskTranslateVideo } from "src/utils";
 import mongoose from "mongoose";
+import { deleteFileService } from "../flask-files-services";
 // Set up __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -55,6 +54,7 @@ export const deleteProjectService = async (payload: any, res: Response, session:
     const { id } = payload;
     const project = await projectsModel.findById(id).session(session);
     if (!project) return errorResponseHandler("Project not found", httpStatusCode.NOT_FOUND, res);
+    await deleteFileService(project.projectVideoLink)
     const response = await projectsModel.findByIdAndDelete(id)
     return {
         success: true,
