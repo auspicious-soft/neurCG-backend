@@ -44,7 +44,7 @@ export const flaskTextToVideo = async (payload: any, res: Response) => {
     try {
         const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string
         const formData = new FormData()
-        formData.append('image_url', `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${payload.projectAvatar}`)
+        formData.append('image_url', `${payload.projectAvatar}`)
         formData.append('text', payload.text)
         formData.append('text_language', payload.textLanguage)
         formData.append('preferred_voice', payload.preferredVoice)
