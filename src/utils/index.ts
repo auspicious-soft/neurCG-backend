@@ -94,9 +94,8 @@ export const flaskAudioToVideo = async (payload: any, res: Response) => {
         // Use the response data directly as a buffer
         const videoFileName = `video_${Date.now()}.mp4`
         const videoBuffer = Buffer.from(response.data)
-        const videoFile = new File([videoBuffer], videoFileName)
         const filePath = `projects/${payload.email}/my-projects/${videoFileName}`;
-        await uploadFileService(videoFile as unknown as Express.Multer.File, filePath)
+        await uploadFileService(videoBuffer as unknown as Express.Multer.File, filePath)
         return filePath
       
     } catch (error) {
@@ -129,10 +128,9 @@ export const flaskTranslateVideo = async (payload: any, res: Response) => {
         // Use the response data directly as a buffer
         const videoFileName = `video_${Date.now()}.mp4`
         const videoBuffer = Buffer.from(response.data)
-        const videoFile = new File([videoBuffer], videoFileName)
         const filePath = `projects/${payload.email}/my-projects/${videoFileName}`;
 
-        await uploadFileService(videoFile as unknown as Express.Multer.File, filePath)
+        await uploadFileService(videoBuffer as unknown as Express.Multer.File, filePath)
         return filePath
     }
     catch (error) {
