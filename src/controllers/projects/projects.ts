@@ -56,11 +56,13 @@ export const convertAudioToVideo = async (req: Request, res: Response) => {
     const validation = requestAudioToVideoSchema.safeParse(req.body)
     if (!validation.success) return res.status(httpStatusCode.BAD_REQUEST).json({ success: false, message: formatZodErrors(validation.error) });
 
-    const session = await mongoose.startSession();
+    // const session = await mongoose.startSession();
     try {
-        await session.startTransaction();
+        // await session.startTransaction();
         const payload = { id: req.params.id, ...req.body };
-        const response = await convertaAudioToVideoService(payload, res, session);
+        const response = await convertaAudioToVideoService(payload, res,
+            //  session
+            );
         return res.status(httpStatusCode.OK).json(response);
     } catch (error) {
         const { code, message } = errorParser(error)
@@ -72,11 +74,13 @@ export const translateVideo = async (req: Request, res: Response) => {
     const validation = requestVideoTranslationSchema.safeParse(req.body)
     if (!validation.success) return res.status(httpStatusCode.BAD_REQUEST).json({ success: false, message: formatZodErrors(validation.error) });
 
-    const session = await mongoose.startSession();
+    // const session = await mongoose.startSession();
     try {
-        await session.startTransaction();
+        // await session.startTransaction();
         const payload = { id: req.params.id, ...req.body };
-        const response = await translateVideoService(payload, res, session);
+        const response = await translateVideoService(payload, res, 
+            // session
+        );
         return res.status(httpStatusCode.OK).json(response);
     } catch (error) {
         const { code, message } = errorParser(error)
