@@ -1,13 +1,13 @@
 import { Request, Response } from "express"
+import { customAlphabet } from "nanoid";
 import { errorResponseHandler } from "../../lib/errors/error-response-handler"
 import { usersModel } from "../../models/user/user-schema"
 import bcrypt from "bcryptjs"
 import { generatePasswordResetToken, getPasswordResetTokenByToken } from "../../utils/mails/token"
-import { sendPasswordResetEmail } from "../../utils/mails/mail"
+import { sendPasswordResetEmail, sendSignUpEmail } from "../../utils/mails/mail"
 import { httpStatusCode } from "../../lib/constant"
 import mongoose from "mongoose"
 import { passwordResetTokenModel } from "../../models/password-token-schema"
-import { customAlphabet } from "nanoid"
 import { increaseReferredCountAndCredits } from "src/utils"
 import { sendNotificationToUserService } from "../notifications/notifications"
 
@@ -31,9 +31,12 @@ export const signupService = async (payload: any, res: Response) => {
             await sendNotificationToUserService({ title: "Referral", message: "Congrats! A new user has signed up with your referral code", ids: [referredBy._id.toString()] }, res)   //Sending THE NOTIFICATION TO THE USER WHO REFERRED ME
         }
     }
-    const newUser =  new usersModel({ ...payload, email: payload.email.toLowerCase().trim() })
+    const newUser = new usersModel({ ...payload, email: payload.email.toLowerCase().trim() })
     await newUser.save()
-    return { success: true, message: "Client signup successfull" , data: newUser}
+    const emailVerificationToken = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 32)
+    const token = emailVerificationToken()
+    await sendSignUpEmail(newUser, token)
+    return { success: true, message: "Client signup successfull", data: newUser }
 }
 
 export const loginService = async (payload: any, res: Response) => {

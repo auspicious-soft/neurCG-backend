@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import ForgotPasswordEmail from "./templates/forgot-password-reset";
 import { configDotenv } from "dotenv";
+import SignUpEmail from "./templates/signup-email-template";
 
 configDotenv()
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -39,4 +40,15 @@ export const sendLatestUpdatesEmail = async (email: string, title: string, messa
             <p>${message}</p>
         `
     });
-};
+}
+
+export const sendSignUpEmail = async (user: any, token: string) => {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL as string
+    const emailVerificationUrl = `${appUrl}/verify-email/?token=${token}&userId=${user._id}`
+    return await resend.emails.send({
+        from: process.env.COMPANY_RESEND_GMAIL_ACCOUNT as string,
+        to: user.email,
+        subject: "Welcome to Maity",
+        react: SignUpEmail({ emailVerificationUrl })
+    });
+}
