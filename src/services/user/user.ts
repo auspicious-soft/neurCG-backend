@@ -39,6 +39,12 @@ export const signupService = async (payload: any, res: Response) => {
     return { success: true, message: "Client signup successfull", data: newUser }
 }
 
+export const verifyEmailService = async (id: string, res: Response) => {
+    const user = await usersModel.findById(id)
+    if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res)
+    return await usersModel.findByIdAndUpdate(id, { isVerified: true }, { new: true })
+}
+
 export const loginService = async (payload: any, res: Response) => {
     const { email, password } = payload
     const client = await usersModel.findOne({ email }).select('+password')

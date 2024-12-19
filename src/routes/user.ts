@@ -1,6 +1,6 @@
 import { Router } from "express";
 import express from "express";
-import { login, signup, forgotPassword, verifyOtpPasswordReset, newPassswordAfterOTPVerified, passwordReset, getUserInfo, editUserInfo, getUserInfoByEmail } from "../controllers/user/user";
+import { login, signup, forgotPassword, verifyOtpPasswordReset, newPassswordAfterOTPVerified, passwordReset, getUserInfo, editUserInfo, getUserInfoByEmail, verifyEmail } from "../controllers/user/user";
 import { getAllNotificationsOfUser, markAllNotificationsAsRead } from "src/controllers/notifications/notifications";
 import { getUserProjects, convertTextToVideo, convertAudioToVideo, translateVideo, deleteProject, stopProjectCreation } from "src/controllers/projects/projects";
 import { buyPlan, cancelSubscription, updateUserCreditsAfterSuccessPayment } from "src/controllers/plans/plans";
@@ -11,6 +11,7 @@ const router = Router();
 
 
 router.post("/signup", signup)
+router.patch("/verify-email/:id", verifyEmail)
 router.post("/login", login)
 router.patch("/forgot-password", forgotPassword)
 router.post("/verify-otp", verifyOtpPasswordReset)
