@@ -92,7 +92,6 @@ export const translateVideo = async (req: Request, res: Response) => {
 
 export const stopProjectCreation = async (req: Request, res: Response) => {
     const { id } = req.params
-    console.log('id: ', id);
      await stopProjectCreationService(id, res)
     return res.status(httpStatusCode.OK).json({ success: true, message: "Project stopped successfully" })
 }
