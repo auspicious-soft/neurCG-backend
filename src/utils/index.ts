@@ -65,7 +65,7 @@ export const flaskTextToVideo = async (payload: any, res: Response) => {
         const videoFileName = `video_${Date.now()}.mp4`
         const videoBuffer = Buffer.from(response.data)
         const filePath = `projects/${payload.email}/my-projects/${videoFileName}`;
-        await uploadFileService(videoBuffer as unknown as Express.Multer.File, filePath)       
+        await uploadFileService(videoBuffer as unknown as Express.Multer.File, filePath)
         return filePath
     } catch (error) {
         return errorResponseHandler("An error occurred during the API call in flaskTextToVideo", httpStatusCode.INTERNAL_SERVER_ERROR, res);
@@ -97,7 +97,7 @@ export const flaskAudioToVideo = async (payload: any, res: Response) => {
         const filePath = `projects/${payload.email}/my-projects/${videoFileName}`;
         await uploadFileService(videoBuffer as unknown as Express.Multer.File, filePath)
         return filePath
-      
+
     } catch (error) {
         return errorResponseHandler("An error occurred during the API call in flaskAudioToVideo", httpStatusCode.INTERNAL_SERVER_ERROR, res);
     }
@@ -135,5 +135,23 @@ export const flaskTranslateVideo = async (payload: any, res: Response) => {
     }
     catch (error) {
         return errorResponseHandler("An error occurred during the API call in flaskTranslateVideo", httpStatusCode.INTERNAL_SERVER_ERROR, res);
+    }
+}
+
+export const stopProjectCreationService = async (id: string, res: Response) => {
+    try {
+        const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string
+        const formData = new FormData()
+        formData.append('id', id)
+        await axios.post(`${flaskUrl}/stop-project-creation`, formData, {
+            timeout: 600000,
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            }
+        })
+        return true
+    }
+    catch (error) {
+        return false
     }
 }

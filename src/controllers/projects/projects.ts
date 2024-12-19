@@ -1,8 +1,10 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { httpStatusCode } from "src/lib/constant";
-import { errorParser } from "src/lib/errors/error-response-handler";
+import { errorParser, errorResponseHandler } from "src/lib/errors/error-response-handler";
+import { usersModel } from "src/models/user/user-schema";
 import { getUserProjectsService, convertTextToVideoService, convertaAudioToVideoService, translateVideoService, deleteProjectService } from "src/services/projects/projects";
+import { stopProjectCreationService } from "src/utils";
 import { requestAudioToVideoSchema, requestTextToVideoSchema, requestVideoTranslationSchema } from "src/validation/client-user";
 import { formatZodErrors } from "src/validation/format-zod-errors";
 
@@ -39,7 +41,7 @@ export const convertTextToVideo = async (req: Request, res: Response) => {
     try {
         // await session.startTransaction();
         const payload = { id: req.params.id, ...req.body };
-        const response = await convertTextToVideoService(payload, res, 
+        const response = await convertTextToVideoService(payload, res,
             // session
         );
         return res.status(httpStatusCode.OK).json(response);
@@ -62,7 +64,7 @@ export const convertAudioToVideo = async (req: Request, res: Response) => {
         const payload = { id: req.params.id, ...req.body };
         const response = await convertaAudioToVideoService(payload, res,
             //  session
-            );
+        );
         return res.status(httpStatusCode.OK).json(response);
     } catch (error) {
         const { code, message } = errorParser(error)
@@ -78,7 +80,7 @@ export const translateVideo = async (req: Request, res: Response) => {
     try {
         // await session.startTransaction();
         const payload = { id: req.params.id, ...req.body };
-        const response = await translateVideoService(payload, res, 
+        const response = await translateVideoService(payload, res,
             // session
         );
         return res.status(httpStatusCode.OK).json(response);
@@ -86,4 +88,11 @@ export const translateVideo = async (req: Request, res: Response) => {
         const { code, message } = errorParser(error)
         return res.status(code || httpStatusCode.INTERNAL_SERVER_ERROR).json({ success: false, message: message || "An error occurred" })
     }
+}
+
+export const stopProjectCreation = async (req: Request, res: Response) => {
+    const { id } = req.params
+    console.log('id: ', id);
+     await stopProjectCreationService(id, res)
+    return res.status(httpStatusCode.OK).json({ success: true, message: "Project stopped successfully" })
 }
