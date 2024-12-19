@@ -43,6 +43,7 @@ export const loginService = async (payload: any, res: Response) => {
     const { email, password } = payload
     const client = await usersModel.findOne({ email }).select('+password')
     if (!client) return errorResponseHandler("Email not found", httpStatusCode.NOT_FOUND, res)
+    if (!client.isVerified) return errorResponseHandler("Email not verified", httpStatusCode.UNAUTHORIZED, res)
     const isPasswordValid = bcrypt.compareSync(password, client.password as string)
     if (!isPasswordValid) return errorResponseHandler("Invalid password", httpStatusCode.UNAUTHORIZED, res)
     const clientObject: any = client.toObject()
