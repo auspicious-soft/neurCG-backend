@@ -13,8 +13,13 @@ import { sendNotificationToUserService } from "../notifications/notifications"
 
 
 export const signupService = async (payload: any, res: Response) => {
+    const emailVerificationToken = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 32)
+    const token = emailVerificationToken()
     const client = await usersModel.findOne({ email: payload.email })
-    if (client) return errorResponseHandler("Email already exists", httpStatusCode.BAD_REQUEST, res)
+    if (client && client.isVerified === false) {
+        await sendSignUpEmail(client, token)
+        return errorResponseHandler("Email already exists. Verification email sent", httpStatusCode.CONFLICT, res)
+    }
     if (payload.password) {
         const newPassword = bcrypt.hashSync(payload.password, 10)
         payload.password = newPassword
@@ -33,8 +38,6 @@ export const signupService = async (payload: any, res: Response) => {
     }
     const newUser = new usersModel({ ...payload, email: payload.email.toLowerCase().trim() })
     await newUser.save()
-    const emailVerificationToken = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 32)
-    const token = emailVerificationToken()
     await sendSignUpEmail(newUser, token)
     return { success: true, message: "Client signup successfull", data: newUser }
 }
