@@ -7,6 +7,7 @@ export const clientSignupSchema = z.object({
     lastName: z.string().min(1),
     referralCode: z.string().optional(),
     profilePic: z.string().optional(),
+    isGoogleUser: z.boolean().optional(),
 }).strict({
     message: "Bad payload present in the data"
 });
