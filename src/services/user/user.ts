@@ -16,10 +16,24 @@ export const signupService = async (payload: any, res: Response) => {
     const emailVerificationToken = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 32)
     const token = emailVerificationToken()
     const client = await usersModel.findOne({ email: payload.email })
-    if (client && client.isVerified === false && client.isGoogleUser === false) {
-        await sendSignUpEmail(client, token)
-        return errorResponseHandler("Email already exists. Verification email sent", httpStatusCode.CONFLICT, res)
+    if (client) {
+        // Case 1: Non-Google user, not verified - send verification email
+        if (!client.isVerified && !client.isGoogleUser) {
+            await sendSignUpEmail(client, token)
+            return errorResponseHandler("Email already exists. Verification email sent", httpStatusCode.CONFLICT, res)
+        }
+        
+        // Case 2: Non-Google user, verified - return error
+        if (!client.isGoogleUser && client.isVerified) {
+            return errorResponseHandler("Email already exists. Please login", httpStatusCode.CONFLICT, res)
+        }
+
+        // Case 3: Google user - return error
+        if (client.isGoogleUser) {
+            return errorResponseHandler("Email already exists. Please login with Google", httpStatusCode.CONFLICT, res)
+        }
     }
+    
     if (payload.password) {
         const newPassword = bcrypt.hashSync(payload.password, 10)
         payload.password = newPassword
@@ -36,11 +50,14 @@ export const signupService = async (payload: any, res: Response) => {
             await sendNotificationToUserService({ title: "Referral", message: "Congrats! A new user has signed up with your referral code", ids: [referredBy._id.toString()] }, res)   //Sending THE NOTIFICATION TO THE USER WHO REFERRED ME
         }
     }
+
     const newUser = new usersModel({ ...payload, email: payload.email.toLowerCase().trim() })
     await newUser.save()
+
     if (client && !client.isGoogleUser) {
         await sendSignUpEmail(newUser, token)
     }
+
     return { success: true, message: "Client signup successfull", data: newUser }
 }
 
@@ -54,7 +71,7 @@ export const loginService = async (payload: any, res: Response) => {
     const { email, password } = payload
     const client = await usersModel.findOne({ email }).select('+password')
     if (!client) return errorResponseHandler("Email not found", httpStatusCode.NOT_FOUND, res)
-    if (client.isGoogleUser) return errorResponseHandler("Email already registered with Google", httpStatusCode.UNAUTHORIZED, res)
+    if (client.isGoogleUser) return errorResponseHandler("Email already registered please signin with google", httpStatusCode.UNAUTHORIZED, res)
     if (!client.isVerified) return errorResponseHandler("Email not verified", httpStatusCode.UNAUTHORIZED, res)
     const isPasswordValid = bcrypt.compareSync(password, client.password as string)
     if (!isPasswordValid) return errorResponseHandler("Invalid password", httpStatusCode.UNAUTHORIZED, res)
