@@ -30,7 +30,7 @@ const usersSchema = new mongoose.Schema({
     phoneNumber: {
         type: String,
     },
-    city: { type: String },
+    city: { type: String }, 
     state: { type: String },
     homeAddress: { type: String },
     creditsLeft: { type: Number, default: 24 },
