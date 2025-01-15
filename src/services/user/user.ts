@@ -22,7 +22,6 @@ export const signupService = async (payload: any, res: Response) => {
             await sendSignUpEmail(client, token)
             return errorResponseHandler("Email already exists. Verification email sent", httpStatusCode.CONFLICT, res)
         }
-        
         // Case 2: Non-Google user, verified - return error
         if (!client.isGoogleUser && client.isVerified) {
             return errorResponseHandler("Email already exists. Please login", httpStatusCode.CONFLICT, res)
@@ -33,7 +32,6 @@ export const signupService = async (payload: any, res: Response) => {
             return errorResponseHandler("Email already exists. Please login with Google", httpStatusCode.CONFLICT, res)
         }
     }
-    
     if (payload.password) {
         const newPassword = bcrypt.hashSync(payload.password, 10)
         payload.password = newPassword
@@ -46,6 +44,7 @@ export const signupService = async (payload: any, res: Response) => {
         const referredBy = await usersModel.findOne({ myReferralCode: `${process.env.NEXT_PUBLIC_APP_URL}/signup?referralCode=${payload.referralCode}` })
         if (referredBy) {
             payload.referredBy = referredBy._id           //Set my referred by
+            payload.creditsLeft = 29
             await increaseReferredCountAndCredits(referredBy._id)   //Increase referred count of the person who referred me
             await sendNotificationToUserService({ title: "Referral", message: "Congrats! A new user has signed up with your referral code", ids: [referredBy._id.toString()] }, res)   //Sending THE NOTIFICATION TO THE USER WHO REFERRED ME
         }
