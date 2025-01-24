@@ -29,9 +29,9 @@ app.use(
         methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT'],
         credentials: true,
     })
-);
+)
 
-
+ 
 var dir = path.join(__dirname, 'static')
 app.use(express.static(dir))
 
