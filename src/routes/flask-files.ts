@@ -3,7 +3,7 @@ import { Router } from "express";
 import { configDotenv } from "dotenv";
 import { checkAuth } from "src/middleware/check-auth";
 import { checkMulter } from "src/lib/errors/error-response-handler";
-import { deleteFile, getFile, uploadFile } from "src/controllers/flask-file-controllers";
+import { deleteFile, deleteMyMedia, getFile, uploadFile } from "src/controllers/flask-file-controllers";
 
 const router = Router()
 configDotenv()
@@ -23,5 +23,7 @@ router.post("/", checkAuth, getFile)
 router.post("/upload", checkAuth, upload.single('file'), checkMulter, uploadFile)
 // Delete a file from the Flask
 router.delete("/remove", checkAuth, deleteFile)
+
+router.delete("/remove-my-media", checkAuth, deleteMyMedia)
 
 export { router }

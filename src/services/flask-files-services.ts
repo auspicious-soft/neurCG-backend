@@ -1,4 +1,5 @@
 import axios from "axios";
+import { projectsModel } from "src/models/user/projects-schema";
 
 const flaskUrl = process.env.FLASK_BACKEND_ML_URL as string;
 
@@ -40,7 +41,19 @@ export const deleteFileService = async (subpath: string) => {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
-    });
+    })
 
     return response;
 };
+
+export const deleteMyMediaService = async (subpath: string, projectType: 'projectAvatar' | 'audio' | 'video') => {
+    const formData = new FormData();
+    formData.append("subpath", subpath);
+    const response = await axios.post(`${flaskUrl}/delete-file`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    })
+    await projectsModel.updateMany({ [projectType]: subpath }, { $set: { [projectType]: "" } })
+    return response
+}
