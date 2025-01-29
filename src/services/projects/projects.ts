@@ -55,9 +55,9 @@ export const deleteProjectService = async (payload: any, res: Response, session:
     const project = await projectsModel.findById(id).session(session);
     if (!project) return errorResponseHandler("Project not found", httpStatusCode.NOT_FOUND, res);
     await deleteFileService(project.projectVideoLink)
-    if(project.audio && project.audio.includes('my-media')) await deleteFileService(project.audio)
-    if(project.video && project.video.includes('my-media')) await deleteFileService(project.video)
-    if(project.projectAvatar && project.projectAvatar.includes('my-media')) await deleteFileService(project.projectAvatar)
+    // if(project.audio && project.audio.includes('my-media')) await deleteFileService(project.audio)
+    // if(project.video && project.video.includes('my-media')) await deleteFileService(project.video)
+    // if(project.projectAvatar && project.projectAvatar.includes('my-media')) await deleteFileService(project.projectAvatar)
     const response = await projectsModel.findByIdAndDelete(id)
     return {
         success: true,
