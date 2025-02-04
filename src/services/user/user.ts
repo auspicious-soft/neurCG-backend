@@ -53,7 +53,7 @@ export const signupService = async (payload: any, res: Response) => {
     const newUser = new usersModel({ ...payload, email: payload.email.toLowerCase().trim() })
     await newUser.save()
 
-    if (client && !client.isGoogleUser) {
+    if (newUser && !newUser.isGoogleUser) {
         await sendSignUpEmail(newUser, token)
     }
 
