@@ -87,7 +87,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
         console.log(`❌ Error message: ${err.message}`);
         res.status(400).send(`Webhook Error: ${err.message}`);
         return
-    }
+    } 
     // console.log('✅ Success:', checkSignature.id);
     const event = payload.body
     const session = event.data.object;
