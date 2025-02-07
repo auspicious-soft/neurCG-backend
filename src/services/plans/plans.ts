@@ -79,6 +79,7 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
 
 
 export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, transaction: mongoose.mongo.ClientSession, res: Response<any, Record<string, any>>) => {
+    console.log('payload: ', payload);
     const sig = payload.headers['stripe-signature'];
     let checkSignature: Stripe.Event;
     try {
