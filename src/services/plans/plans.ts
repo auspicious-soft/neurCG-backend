@@ -93,34 +93,34 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     const session = event.data.object;
     let idempotentKey = session.metadata?.idempotencyKey;
 
-    if (!idempotentKey && session.subscription) {
-        const subscription = await stripe.subscriptions.retrieve(session.subscription);
-        idempotentKey = subscription.metadata?.idempotencyKey || "defaultKey"; // Fallback to "defaultKey" if still undefined
-    }
-    const existingEvent = await IdempotencyKeyModel.findOne({
-        $or: [
-            { eventId: event.id },
-            { key: idempotentKey }
-        ]
-    })
-    if (existingEvent) { 
-        // console.log(`Event ${event.id} or session with idempotency key ${idempotentKey} has already been processed.`);
-        await IdempotencyKeyModel.findByIdAndUpdate(existingEvent._id, { $set: { processed: true, processedAt: new Date() } })
-        return { success: true, message: 'Event already processed' };
-    }
-    if (event.id) {
-        await IdempotencyKeyModel.findOneAndUpdate(
-            { key: idempotentKey },
-            {
-                $set: {
-                    eventId: event.id,
-                    processed: true,
-                    processedAt: new Date()
-                }
-            },
-            { upsert: true }
-        )
-    }
+    // if (!idempotentKey && session.subscription) {
+    //     const subscription = await stripe.subscriptions.retrieve(session.subscription);
+    //     idempotentKey = subscription.metadata?.idempotencyKey || "defaultKey"; // Fallback to "defaultKey" if still undefined
+    // }
+    // const existingEvent = await IdempotencyKeyModel.findOne({
+    //     $or: [
+    //         { eventId: event.id },
+    //         { key: idempotentKey }
+    //     ]
+    // })
+    // if (existingEvent) { 
+    //     // console.log(`Event ${event.id} or session with idempotency key ${idempotentKey} has already been processed.`);
+    //     await IdempotencyKeyModel.findByIdAndUpdate(existingEvent._id, { $set: { processed: true, processedAt: new Date() } })
+    //     return { success: true, message: 'Event already processed' };
+    // }
+    // if (event.id) {
+    //     await IdempotencyKeyModel.findOneAndUpdate(
+    //         { key: idempotentKey },
+    //         {
+    //             $set: {
+    //                 eventId: event.id,
+    //                 processed: true,
+    //                 processedAt: new Date()
+    //             }
+    //         },
+    //         { upsert: true }
+    //     )
+    // }
 
     let userId                                    // Ensure you're sending this when creating the session
     let planType: 'free' | 'intro' | 'pro'                // Ensure you're sending this when creating the session
