@@ -79,7 +79,6 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
 
 
 export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, transaction: mongoose.mongo.ClientSession, res: Response<any, Record<string, any>>) => {
-    console.log('payload: ', payload);
     const sig = payload.headers['stripe-signature'];
     let checkSignature: Stripe.Event;
     try {
@@ -127,6 +126,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     let planType: 'free' | 'intro' | 'pro'                // Ensure you're sending this when creating the session
     const subs = await stripe.subscriptions.retrieve(session.subscription)
     const interval = await (subs as any).plan.interval
+    console.log('event.type: ', event.type);
     switch (event.type) {
         case 'checkout.session.completed':
             userId = session.metadata.userId
