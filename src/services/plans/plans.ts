@@ -129,6 +129,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
     console.log('event.type: ', event.type);
     switch (event.type) {
         case 'checkout.session.completed':
+            console.log('checkout.session.completed');
             userId = session.metadata.userId
             planType = session.metadata.planType
             const user = await usersModel.findById(userId)
