@@ -80,127 +80,130 @@ export const buyPlanService = async (payload: Payload, res: Response) => {
 
 export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, transaction: mongoose.mongo.ClientSession, res: Response<any, Record<string, any>>) => {
     const sig = payload.headers['stripe-signature'];
+    if (!sig) {
+        return res.status(400).json({ success: false, message: "Missing Stripe signature" });
+    }
+
     let checkSignature: Stripe.Event;
-    try {
-        checkSignature = stripe.webhooks.constructEvent(payload.rawBody, sig, process.env.STRIPE_WEBHOOK_SECRET as string);
-    } catch (err: any) {
-        console.log(`❌ Error message: ${err.message}`);
-        res.status(400).send(`Webhook Error: ${err.message}`);
-        return
-    } 
-    // console.log('✅ Success:', checkSignature.id);
-    const event = payload.body
+    checkSignature = stripe.webhooks.constructEvent(
+        payload.rawBody,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET as string
+    );
+
+
+    const event = payload.body;
     const session = event.data.object;
-    let idempotentKey = session.metadata?.idempotencyKey;
+    const subs = await stripe.subscriptions.retrieve(session.subscription);
+    const interval = (subs as any).plan.interval;
 
-    // if (!idempotentKey && session.subscription) {
-    //     const subscription = await stripe.subscriptions.retrieve(session.subscription);
-    //     idempotentKey = subscription.metadata?.idempotencyKey || "defaultKey"; // Fallback to "defaultKey" if still undefined
-    // }
-    // const existingEvent = await IdempotencyKeyModel.findOne({
-    //     $or: [
-    //         { eventId: event.id },
-    //         { key: idempotentKey }
-    //     ]
-    // })
-    // if (existingEvent) { 
-    //     // console.log(`Event ${event.id} or session with idempotency key ${idempotentKey} has already been processed.`);
-    //     await IdempotencyKeyModel.findByIdAndUpdate(existingEvent._id, { $set: { processed: true, processedAt: new Date() } })
-    //     return { success: true, message: 'Event already processed' };
-    // }
-    // if (event.id) {
-    //     await IdempotencyKeyModel.findOneAndUpdate(
-    //         { key: idempotentKey },
-    //         {
-    //             $set: {
-    //                 eventId: event.id,
-    //                 processed: true,
-    //                 processedAt: new Date()
-    //             }
-    //         },
-    //         { upsert: true }
-    //     )
-    // }
+    let userId = session.metadata?.userId;
+    let planType: 'free' | 'intro' | 'pro' = session.metadata?.planType;
 
-    let userId                                    // Ensure you're sending this when creating the session
-    let planType: 'free' | 'intro' | 'pro'                // Ensure you're sending this when creating the session
-    const subs = await stripe.subscriptions.retrieve(session.subscription)
-    const interval = await (subs as any).plan.interval
-    console.log('event.type: ', event.type);
     switch (event.type) {
-        case 'checkout.session.completed':
-            console.log('checkout.session.completed');
-            userId = session.metadata.userId
-            planType = session.metadata.planType
-            const user = await usersModel.findById(userId)
-            const planAmount = interval === 'month' ? await getPriceAmountByPriceId(priceIdsMap[planType]) : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType as 'intro' | 'pro']) * 0.95;
-            const creditsToAdd = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
-            const currentSubscriptionId = user?.planOrSubscriptionId
+        case 'checkout.session.completed': {
+            const user = await usersModel.findById(userId);
+            const planAmount = interval === 'month'
+                ? await getPriceAmountByPriceId(priceIdsMap[planType])
+                : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType as 'intro' | 'pro']) * 0.95;
+
+            const creditsToAdd = interval === 'month'
+                ? creditCounts[planType]
+                : yearlyCreditCounts[planType as 'intro' | 'pro'];
+
+            const currentSubscriptionId = user?.planOrSubscriptionId;
             if (currentSubscriptionId && currentSubscriptionId !== session.subscription) {
-                const subscriptionExists = await stripe.subscriptions.retrieve(currentSubscriptionId)
+                const subscriptionExists = await stripe.subscriptions.retrieve(currentSubscriptionId);
                 if (subscriptionExists) {
-                    await stripe.subscriptions.cancel(currentSubscriptionId)
+                    await stripe.subscriptions.cancel(currentSubscriptionId);
                 }
             }
+
             const result = await usersModel.findByIdAndUpdate(userId, {
                 $inc: { creditsLeft: creditsToAdd },
                 planType,
                 planOrSubscriptionId: session.subscription,
                 planInterval: interval
             },
+                { new: true, session: transaction }
+            );
+
+            await IncomeModel.create([
                 {
-                    new: true,
-                    session: transaction
-                })
-            await IncomeModel.create([{
+                    userId,
+                    userName: `${result?.firstName} ${result?.lastName}`,
+                    planType,
+                    planOrSubscriptionId: session.subscription,
+                    planAmount,
+                    planInterval: interval,
+                    monthYear: new Date().toISOString().slice(0, 7)
+                }
+            ], { session: transaction });
+
+            await transaction.commitTransaction();
+            return { success: true, message: `User ${userId} credited with ${creditsToAdd} credits for plan ${planType}`, data: result };
+        }
+
+        case 'invoice.paid': {
+            const invoice = event.data.object;  // Ensure this is an invoice
+            const subscriptionId = invoice.subscription;
+
+            if (!subscriptionId) {
+                return { success: false, message: "Invoice has no associated subscription." };
+            }
+
+            const subs = await stripe.subscriptions.retrieve(subscriptionId);
+            const userId = subs.metadata?.userId;
+            const planType = subs.metadata?.planType as 'intro' | 'pro';
+
+            if (!userId || !planType) {
+                return { success: false, message: "Missing userId or planType in metadata." };
+            }
+
+            const planAmount = interval === 'month'
+                ? await getPriceAmountByPriceId(priceIdsMap[planType])
+                : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType]) * 0.95;
+
+            const creditsToAdd = interval === 'month'
+                ? creditCounts[planType]
+                : yearlyCreditCounts[planType];
+
+            const result = await usersModel.findByIdAndUpdate(
                 userId,
-                userName: result?.firstName + ' ' + result?.lastName,
-                planType,
-                planOrSubscriptionId: session.subscription,
-                // stripeCustomerId: subs.customer,
-                planAmount,
-                planInterval: interval,
-                monthYear: new Date().toISOString().slice(0, 7)
-            }], { session: transaction })
+                { $inc: { creditsLeft: creditsToAdd }, planType, planOrSubscriptionId: subscriptionId, planInterval: interval },
+                { new: true, session: transaction }
+            );
 
-            await transaction.commitTransaction()
-            return { success: true, message: `User ${userId} has been credited with ${creditsToAdd} credits for plan ${planType}`, data: result }
+            await IncomeModel.create([
+                {
+                    userId,
+                    userName: `${result?.firstName} ${result?.lastName}`,
+                    planType,
+                    planOrSubscriptionId: subscriptionId,
+                    planAmount,
+                    monthYear: new Date().toISOString().slice(0, 7),
+                    planInterval: interval
+                }
+            ], { session: transaction });
 
-        case 'invoice.paid':
-            userId = subs.metadata.userId
-            planType = subs.metadata.planType as 'intro' | 'pro'
-            const planAmountInvoice = interval === 'month' ? await getPriceAmountByPriceId(priceIdsMap[planType]) : await getPriceAmountByPriceId(yearlyPriceIdsMap[planType as 'intro' | 'pro']) * 0.95;
-            const creditsToAddInvoice = interval == 'month' ? creditCounts[planType] : yearlyCreditCounts[planType as 'intro' | 'pro']
-            const invoiceResult = await usersModel.findByIdAndUpdate(userId, { $inc: { creditsLeft: creditsToAddInvoice }, planType, planOrSubscriptionId: session.subscription, planInterval: interval }, { new: true, session: transaction })
+            await transaction.commitTransaction();
+            return { success: true, message: `User ${userId} credited with ${creditsToAdd} credits for plan ${planType}`, data: result };
+        }
 
-            await IncomeModel.create([{
-                userId,
-                userName: invoiceResult?.firstName + ' ' + invoiceResult?.lastName,
-                planType,
-                planOrSubscriptionId: session.subscription,
-                planAmount: planAmountInvoice,
-                monthYear: new Date().toISOString().slice(0, 7),
-                planInterval: interval
-            }], { session: transaction })
-            await transaction.commitTransaction()
-            return { success: true, message: `User ${userId} has been credited with ${creditsToAddInvoice} credits for plan ${planType}`, data: invoiceResult }
- 
-        case 'invoice.payment_failed':
-            //SEND NOTIFICATION TO USER
-            const userIdInvoiceFailed = subs.metadata.userId
-            const planTypeInvoiceFailed = subs.metadata.planType as 'free' | 'intro' | 'pro'
+
+        case 'invoice.payment_failed': {
             const sendNotification = await notificationsModel.create({
-                userId: userIdInvoiceFailed,
+                userId,
                 title: 'Payment Failed for your plan',
-                message: `Your payment for ${planTypeInvoiceFailed} plan has failed. Please contact support.`,
+                message: `Your payment for ${planType} plan has failed. Please contact support.`,
                 date: new Date()
-            })
-            console.log(`Payment failed notification sent to user ${userIdInvoiceFailed} for plan ${planTypeInvoiceFailed}.`)
-            return { success: false, message: `Payment for ${planTypeInvoiceFailed} plan has failed.`, data: sendNotification }
+            });
+
+            return { success: false, message: `Payment for ${planType} plan has failed.`, data: sendNotification };
+        }
 
         default:
-            console.log(`Unhandled event type ${event.type}`)
-            return { success: false, message: `Unhandled event type ${event.type}` }
+            return { success: false, message: `Unhandled event type ${event.type}` };
     }
 }
 
