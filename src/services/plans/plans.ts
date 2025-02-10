@@ -183,7 +183,7 @@ export const updateUserCreditsAfterSuccessPaymentService = async (payload: any, 
             }], { session: transaction })
             await transaction.commitTransaction()
             return { success: true, message: `User ${userId} has been credited with ${creditsToAddInvoice} credits for plan ${planType}`, data: invoiceResult }
-
+ 
         case 'invoice.payment_failed':
             //SEND NOTIFICATION TO USER
             const userIdInvoiceFailed = subs.metadata.userId
