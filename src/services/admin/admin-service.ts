@@ -26,7 +26,7 @@ interface loginInterface {
 }
 
 //Auth Services
-export const loginService = async (payload: loginInterface, res: Response) => {
+export const loginService = async (payload: loginInterface, res: Response) => { 
     const getAdmin = await adminModel.findOne({ email: payload.email.toLowerCase() }).select("+password")
     if (!getAdmin) return errorResponseHandler("Admin not found", httpStatusCode.NOT_FOUND, res)
     const passwordMatch = bcrypt.compareSync(payload.password, getAdmin.password)
