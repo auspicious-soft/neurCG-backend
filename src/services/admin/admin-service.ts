@@ -161,11 +161,11 @@ export const deleteAUserService = async (id: string, res: Response) => {
 
     // Retrieve user projects details to delete associated files
     const userProjectsDetails = await projectsModel.find({ userId: id });
-    console.log('userProjectsDetails: ', userProjectsDetails);
 
     
     // Delete associated files if they exist
     for (const project of userProjectsDetails) {
+        console.log('project: ', project);
         // Call delete for second projectVideoLink if applicable
         if (project.projectVideoLink) {
             await deleteFileService(project.projectVideoLink);
