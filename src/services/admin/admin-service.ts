@@ -137,7 +137,7 @@ export const getAUserService = async (id: string, res: Response) => {
         data: {
             user,
             projects: userProjects,
-            avatarsUsed: combinedAvatarsInfo
+            avatarsUsed: combinedAvatarsInfo 
         }
     };
 }
