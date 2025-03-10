@@ -19,7 +19,7 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
 export const sendContactMailToAdmin = async (payload: { name: string, email: string, message: string, phoneNumber: string }) => {
     await resend.emails.send({
         from: process.env.COMPANY_RESEND_GMAIL_ACCOUNT as string,
-        to: payload.email,
+        to: "maity@maity.pro",
         subject: "Contact Us | New Message",
         html: `
             <h3>From: ${payload.name}</h3>
