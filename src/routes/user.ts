@@ -6,6 +6,7 @@ import { getUserProjects, convertTextToVideo, convertAudioToVideo, translateVide
 import { buyPlan, cancelSubscription, updateUserCreditsAfterSuccessPayment } from "src/controllers/plans/plans";
 import { checkAuth } from "src/middleware/check-auth";
 import { getAvatar } from "src/controllers/admin/avatar";
+import { deleteAUser } from "src/controllers/admin/admin";
 
 const router = Router();
 
@@ -20,7 +21,7 @@ router.patch("/update-password/:id", passwordReset)
 router.get('/avatars', checkAuth, getAvatar)
 
 
-router.route("/:id").get(checkAuth, getUserInfo).put(checkAuth, editUserInfo)
+router.route("/:id").get(checkAuth, getUserInfo).put(checkAuth, editUserInfo).delete(checkAuth, deleteAUser)
 router.route("/:id/notifications").get(checkAuth, getAllNotificationsOfUser).put(checkAuth, markAllNotificationsAsRead)
 router.get("/email/:email", getUserInfoByEmail)
 

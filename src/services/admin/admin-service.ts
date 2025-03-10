@@ -13,6 +13,7 @@ import { usersModel } from "src/models/user/user-schema";
 import { IncomeModel } from "src/models/admin/income-schema";
 import { projectsModel } from "src/models/user/projects-schema";
 import { avatarModel } from "src/models/admin/avatar-schema";
+import { deleteFileService } from "../flask-files-services";
 // import { clientModel } from "../../models/user/user-schema";
 // import { passswordResetSchema, testMongoIdSchema } from "../../validation/admin-user";
 // import { generatePasswordResetToken, getPasswordResetTokenByToken } from "../../lib/send-mail/tokens";
@@ -26,7 +27,7 @@ interface loginInterface {
 }
 
 //Auth Services
-export const loginService = async (payload: loginInterface, res: Response) => {
+export const loginService = async (payload: loginInterface, res: Response) => { 
     const getAdmin = await adminModel.findOne({ email: payload.email.toLowerCase() }).select("+password")
     if (!getAdmin) return errorResponseHandler("Admin not found", httpStatusCode.NOT_FOUND, res)
     const passwordMatch = bcrypt.compareSync(payload.password, getAdmin.password)
@@ -136,7 +137,7 @@ export const getAUserService = async (id: string, res: Response) => {
         data: {
             user,
             projects: userProjects,
-            avatarsUsed: combinedAvatarsInfo
+            avatarsUsed: combinedAvatarsInfo 
         }
     };
 }
@@ -155,13 +156,33 @@ export const addCreditsManuallyService = async (id: string, amount: number, res:
 
 export const deleteAUserService = async (id: string, res: Response) => {
     const user = await usersModel.findById(id);
-    if (!user) return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res);
+    if (!user)
+        return errorResponseHandler("User not found", httpStatusCode.NOT_FOUND, res);
 
+    // Retrieve user projects details to delete associated files
+    const userProjectsDetails = await projectsModel.find({ userId: id });
+
+    
+    // Delete associated files if they exist
+    for (const project of userProjectsDetails) {
+        // Call delete for second projectVideoLink if applicable
+        if (project.projectVideoLink) {
+            await deleteFileService(project.projectVideoLink);
+        }
+        // Delete audio file if exists
+        if (project.audio) {
+            await deleteFileService(project.audio);
+        }
+        // Delete video file if exists
+        if (project.video) {
+            await deleteFileService(project.video);
+        }
+    }
+    
     // Delete user projects ----
-    const userProjects = await projectsModel.deleteMany({ userId: id })
-
+    const userProjects = await projectsModel.deleteMany({ userId: id });
     // Delete user ----
-    await usersModel.findByIdAndDelete(id)
+    await usersModel.findByIdAndDelete(id);
 
     return {
         success: true,
@@ -170,8 +191,8 @@ export const deleteAUserService = async (id: string, res: Response) => {
             user,
             projects: userProjects
         }
-    }
-}
+    };
+};
 
 export const sendLatestUpdatesService = async (payload: any, res: Response) => {
     const { message, title } = payload;

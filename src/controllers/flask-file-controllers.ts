@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getFileService, uploadFileService, deleteFileService } from "src/services/flask-files-services";
+import { getFileService, uploadFileService, deleteFileService, deleteMyMediaService } from "src/services/flask-files-services";
 
 export const getFile = async (req: Request, res: Response) => {
     const { subpath } = req.body;
@@ -47,3 +47,16 @@ export const deleteFile = async (req: Request, res: Response) => {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
+
+export const deleteMyMedia = async (req: Request, res: Response) => {
+    const { subpath, projectType } = req.body;
+    try {
+        const response = await deleteMyMediaService(subpath, projectType);
+        if (response.status !== 200) {
+            throw new Error('Failed to delete file from Flask API');
+        }
+        res.status(200).json({ success: true, message: "File deleted successfully" });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+}

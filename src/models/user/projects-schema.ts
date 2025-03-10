@@ -5,7 +5,7 @@ const projectsSchema = new Schema({
     projectName: { type: String, required: true },
     userId: { type: Schema.Types.ObjectId, required: true, ref: "users" },
     projectVideoLink: { type: String, required: true },
-    projectAvatar: { type: Schema.Types.Mixed, required: true },
+    projectAvatar: { type: Schema.Types.Mixed, required: true, default: "" },
     subtitles: { type: Boolean, required: true },
     text: { type: String, required: false },
     textLanguage: { type: String, required: false },

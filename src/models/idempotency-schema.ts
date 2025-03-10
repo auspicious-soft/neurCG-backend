@@ -15,6 +15,6 @@ const idempotencyKeySchema = new mongoose.Schema({
 });
 
 // Index to automatically remove expired keys
-idempotencyKeySchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+idempotencyKeySchema.index({ key: 1 }, { unique: true });
 
 export const IdempotencyKeyModel = mongoose.model('IdempotencyKey', idempotencyKeySchema)

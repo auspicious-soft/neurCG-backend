@@ -1,7 +1,5 @@
 name: CI/CD Pipeline
 
-# on:
-#   workflow_dispatch:
 on:
   push:
     branches:
@@ -19,33 +17,39 @@ jobs:
       EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
 
     steps:
-      # Step 1: Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Log in to Docker Hub
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          version: latest
+
       - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Step 3: Build and push Docker image to Docker Hub
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/backend:latest
-
-      # Step 7: Setup SSH for EC2
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+          platforms: linux/amd64
+          builder: ${{ steps.buildx.outputs.name }}
+          
+      # Rest of your deployment steps remain the same
       - name: Setup SSH for EC2
         uses: omarhosny206/setup-ssh-for-ec2@v1.0.0
         with:
           EC2_SSH_PRIVATE_KEY: $EC2_SSH_PRIVATE_KEY
           EC2_URL: $EC2_URL
 
-      # Step 8: Deploy to EC2
       - name: Deploy to EC2
         run: |
           ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_URL << 'ENDSSH'
@@ -94,12 +98,9 @@ jobs:
               -e AWS_BUCKET_NAME='${{ secrets.AWS_BUCKET_NAME }}' \
               ${{ secrets.DOCKER_USERNAME }}/backend:latest || { echo 'Docker run failed'; exit 1; }
 
-           
-    
-            # Prune unused Docker resources to free up space
+            # Cleanup
             echo "Cleaning up unused Docker resources..."
             docker system prune -af --volumes || { echo "Docker system prune failed"; exit 1; }
-            # Clean up temporary files and logs
             echo "Cleaning up temporary files and logs..."
             sudo rm -rf /tmp/*
             sudo truncate -s 0 /var/log/*.log
@@ -107,37 +108,4 @@ jobs:
             sudo find /var/log/ -type f -name "*.log" -exec truncate -s 0 {} \;
             echo "Checking disk usage after cleanup..."
             df -h
-
           ENDSSH
-
- # Install Nginx if not present
-            # if ! command -v nginx &> /dev/null
-            # then
-            #   sudo apt-get update
-            #   sudo apt-get install -y nginx
-            # fi
-    
-            # # Create Nginx configuration
-            # sudo tee /etc/nginx/sites-available/backend > /dev/null << EOL
-            # server {
-            #     listen 80;
-            #     server_name ${{ secrets.EC2_URL }};
-    
-            #     location /api {
-            #         proxy_pass http://localhost:8000/;
-            #         proxy_http_version 1.1;
-            #         proxy_set_header Upgrade $http_upgrade;
-            #         proxy_set_header Connection 'upgrade';
-            #         proxy_set_header Host $host;
-            #         proxy_cache_bypass $http_upgrade;
-            #     }
-            # }
-            # EOL
-    
-            # # Move temporary config to default location if successful
-            # if [ $? -eq 0 ]; then
-            #   sudo mv /etc/nginx/sites-available/default.tmp /etc/nginx/sites-available/default
-            #   sudo systemctl restart nginx
-            # else
-            #   echo "Failed to create Nginx config"
-            # fi
